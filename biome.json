@@ -33,7 +33,8 @@
           "level": "error",
           "options": {
             "syntax": "shorthand"
-          }
+          },
+          "useImportExtensions": "off"
         }
       },
       "complexity": "warn",
