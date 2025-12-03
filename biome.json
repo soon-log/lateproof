@@ -12,12 +12,38 @@
   "formatter": {
     "enabled": true,
     "indentStyle": "space",
-    "indentWidth": 2
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "arrowParentheses": "always",
+      "trailingCommas": "none"
+    }
   },
   "linter": {
     "enabled": true,
     "rules": {
       "recommended": true,
+      "a11y": "error",
+      "correctness": "error",
+      "style": {
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "shorthand"
+          },
+          "useImportExtensions": "off"
+        }
+      },
+      "complexity": "warn",
+      "performance": "warn",
+      "security": "warn",
+      "nursery": {
+        "recommended": true,
+        "useSortedClasses": "warn"
+      },
       "suspicious": {
         "noUnknownAtRules": "off"
       }
@@ -33,5 +59,15 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["**/__tests__/**", "**/*.{spec,test}.{js,jsx,ts,tsx}"],
+      "linter": {
+        "rules": {
+          "complexity": "off"
+        }
+      }
+    }
+  ]
 }
