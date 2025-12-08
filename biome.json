@@ -27,14 +27,16 @@
     "rules": {
       "recommended": true,
       "a11y": "error",
-      "correctness": "error",
+      "correctness": {
+        "recommended": true,
+        "useImportExtensions": "off"
+      },
       "style": {
         "useConsistentArrayType": {
           "level": "error",
           "options": {
             "syntax": "shorthand"
-          },
-          "useImportExtensions": "off"
+          }
         }
       },
       "complexity": "warn",
