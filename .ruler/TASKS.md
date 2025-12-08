@@ -12,21 +12,22 @@ ID 규칙:
 # Milestone 1 — Foundation Setup
 
 ## Epic 1.1 — Repository & Environment
-- [ ] M1-E1-T01: GitHub Repository 생성
-- [ ] M1-E1-T02: README 초기 템플릿 작성
-- [ ] M1-E1-T03: Biome 초기 설정
+- [x] M1-E1-T01: GitHub Repository 생성
+- [x] M1-E1-T02: README 초기 템플릿 작성
+- [x] M1-E1-T03: Biome 초기 설정
+- [x] M1-E1-T03-1: Lefthook Git Hooks 설정
 - [ ] M1-E1-T04: Vercel 프로젝트 생성
 - [ ] M1-E1-T05: 환경 변수 구조 설계
 
 ## Epic 1.2 — Next.js + FSD 구조
-- [ ] M1-E2-T01: Next.js App Router 초기화
-- [ ] M1-E2-T02: src/ 디렉토리 구조 생성
-- [ ] M1-E2-T03: FSD Layer 구축(app/features/entities/shared)
+- [x] M1-E2-T01: Next.js App Router 초기화
+- [x] M1-E2-T02: src/ 디렉토리 구조 생성
+- [x] M1-E2-T03: FSD Layer 구축(app/features/entities/shared)
 
 ## Epic 1.3 — UI Design System & Storybook
-- [ ] M1-E3-T01: TailwindCSS 설치
-- [ ] M1-E3-T02: Shadcn 초기화
-- [ ] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등)
+- [x] M1-E3-T01: TailwindCSS 설치
+- [x] M1-E3-T02: Shadcn 초기화
+- [x] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등) — Button만 완료
 - [ ] M1-E3-T04: SG.md 기반 스타일 시스템 구축
 - [ ] M1-E3-T05: Storybook 설치
 - [ ] M1-E3-T06: Atomic UI 컴포넌트 stories 작성
