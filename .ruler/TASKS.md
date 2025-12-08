@@ -16,8 +16,8 @@ ID 규칙:
 - [x] M1-E1-T02: README 초기 템플릿 작성
 - [x] M1-E1-T03: Biome 초기 설정
 - [x] M1-E1-T03-1: Lefthook Git Hooks 설정
-- [ ] M1-E1-T04: Vercel 프로젝트 생성
-- [ ] M1-E1-T05: 환경 변수 구조 설계
+- [x] M1-E1-T04: Vercel 프로젝트 생성
+- [x] M1-E1-T05: 환경 변수 구조 설계
 
 ## Epic 1.2 — Next.js + FSD 구조
 - [x] M1-E2-T01: Next.js App Router 초기화
