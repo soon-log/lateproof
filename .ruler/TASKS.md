@@ -28,7 +28,7 @@ ID 규칙:
 - [x] M1-E3-T01: TailwindCSS 설치
 - [x] M1-E3-T02: Shadcn 초기화
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등) — Button만 완료
-- [ ] M1-E3-T04: SG.md 기반 스타일 시스템 구축
+- [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축
 - [ ] M1-E3-T05: Storybook 설치
 
 ---
