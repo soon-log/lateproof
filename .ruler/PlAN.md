@@ -9,7 +9,7 @@
 ## 📊 Current Status
 
 **현재 Phase**: `M1 — Foundation Setup`  
-**전체 진행률**: `8.4%` (13/155 tasks)  
+**전체 진행률**: `9.0%` (14/155 tasks)  
 **현재 작업 중**: 없음  
 **차단 요소**: 없음
 
@@ -23,9 +23,9 @@
 
 ### 다음 작업 (우선순위 순)
 
-1. **M1-E3-T04**: SG.md 기반 스타일 시스템 구축
-2. **M1-E3-T05**: Storybook 설치
-3. **M1-E3-T06**: Atomic UI 컴포넌트 stories 작성
+1. **M1-E3-T05**: Storybook 설치
+2. **M1-E3-T06**: Atomic UI 컴포넌트 stories 작성
+3. **M1-E3-T03 (추가)**: Input, Modal 등 나머지 UI 컴포넌트 완성
 4. **M2-E1-T01**: Step Enum 정의 (Phase 2 시작 준비)
 
 ---
@@ -51,18 +51,18 @@
 - [x] M1-E3-T01: TailwindCSS 설치 (tailwindcss v4, globals.css 확인)
 - [x] M1-E3-T02: Shadcn 초기화 (components.json, @radix-ui/react-slot 확인)
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성 — Button만 완료 (shared/components/ui/button.tsx)
-- [ ] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (미완료)
+- [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (완료)
 - [ ] M1-E3-T05: Storybook 설치 (미완료)
 
 ### 통계
-- **완료**: 13 tasks
+- **완료**: 14 tasks
 - **진행 중**: 0 tasks
-- **남은 작업**: 142 tasks
+- **남은 작업**: 141 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
 - **M1-E2**: ✅ 100% (3/3 tasks) — Next.js + FSD 구조 완료
-- **M1-E3**: 🟡 50% (3/6 tasks) — UI Design System & Storybook 진행 중
+- **M1-E3**: 🟡 66.7% (4/6 tasks) — UI Design System & Storybook 진행 중
 
 ---
 
@@ -76,13 +76,13 @@
 
 ### Phase별 체크리스트
 
-#### Phase 1: Foundation (M1) — 진행 중 (66.7% 완료)
+#### Phase 1: Foundation (M1) — 진행 중 (72.2% 완료)
 - [x] Next.js 프로젝트 초기화
 - [x] FSD 구조 완성
 - [x] Biome 설정
 - [x] 환경 변수 구조 설계 (.env.example)
 - [x] Vercel 배포 설정
-- [ ] SG.md 스타일 시스템
+- [x] SG.md 스타일 시스템
 - [ ] Storybook 설치
 - [ ] 기본 UI 컴포넌트 완성 (Button만 완료)
 
@@ -235,6 +235,24 @@
 - 진행률: 8.4% (13/155 tasks)
 - Milestone 1 진행률: 66.7% (12/18 tasks)
 - 다음 작업: SG.md 스타일 시스템, Storybook 설치, UI 컴포넌트 완성
+
+### 2025-12-09 (00:25)
+- **완료**: M1-E3-T04 — SG.md 기반 스타일 시스템 구축
+  - `.ruler/SG.md` 생성 (색상 팔레트, 타이포그래피, Spacing, Breakpoint 문서화)
+  - `app/globals.css` 수정 (Tailwind CSS v4 규격)
+    - @theme 블록에 브랜드 색상 정의 (Purple 계열)
+    - 커스텀 색상 변수 추가 (--color-brand-*, --color-neutral-*, 등)
+    - Typography Presets 추가 (heading-1, heading-2, body-lg, caption)
+    - 유틸리티 클래스 추가 (.bg-brand, .text-brand, .focus-ring, 등)
+  - `src/shared/components/ui/button.tsx` 수정
+    - 브랜드 Purple 색상 적용 (bg-brand-500, hover:bg-brand-600)
+    - rounded-lg (10px) 적용
+    - shadow 효과 추가
+    - xl 사이즈 추가
+- 진행률: 9.0% (14/155 tasks)
+- Milestone 1 진행률: 72.2% (13/18 tasks)
+- Epic 1.3 진행률: 66.7% (4/6 tasks)
+- 다음 작업: Storybook 설치, UI 컴포넌트 완성
 
 ---
 
