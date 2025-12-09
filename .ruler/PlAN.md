@@ -55,6 +55,7 @@
 - [x] M1-E3-T01: TailwindCSS 설치 (tailwindcss v4, globals.css 확인)
 - [x] M1-E3-T02: Shadcn 초기화 (components.json, @radix-ui/react-slot 확인)
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성 — Button만 완료 (shared/components/ui/button.tsx)
+<<<<<<< HEAD
 - [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (완료)
 - [x] M1-E3-T05: Storybook 설치 (완료 — v10.1.5, nextjs-vite)
 
@@ -79,6 +80,10 @@
 
 #### Epic 2.3 — UPLOAD Step ✅ 완료
 - [x] M2-E3-T01: 이미지 업로드(파일 선택) + 파일 상태 저장(entities/photo) + MATCH 이동 (src/entities/photo/model/store.ts, src/features/upload-photo/model/use-upload-photo-flow.ts)
+=======
+- [ ] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (미완료)
+- [ ] M1-E3-T05: Storybook 설치 (미완료)
+>>>>>>> e3bdd75 (chore: Atomic UI Doc 제거)
 
 ### 통계
 - **완료**: 27 tasks
