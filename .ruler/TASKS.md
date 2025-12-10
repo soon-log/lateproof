@@ -29,7 +29,7 @@ ID 규칙:
 - [x] M1-E3-T02: Shadcn 초기화
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등) — Button만 완료
 - [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축
-- [ ] M1-E3-T05: Storybook 설치
+- [x] M1-E3-T05: Storybook 설치
 
 ## Epic 1.4 — Testing Environment Setup
 - [ ] M1-E4-T01: Vitest 설치 및 설정
