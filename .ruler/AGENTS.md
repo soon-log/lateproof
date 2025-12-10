@@ -66,3 +66,27 @@ export const Status = {
 
 export type Status = typeof Status[keyof typeof Status];
 ```
+
+## 라이브러리 관리 규칙
+
+### Context7 사용
+
+**라이브러리 설치 및 사용 시 Context7 필수 활용**:
+
+라이브러리를 설치하거나 사용하기 전에 반드시 Context7 MCP를 사용하여 최신 문서와 사용법을 확인하세요.
+
+**적용 예시**:
+```typescript
+// ❌ Bad - Context7 조회 없이 설치
+// pnpm add zustand 후 추측으로 구현
+
+// ✅ Good - Context7로 최신 문서 확인 후 구현
+// 1. Context7로 zustand 문서 조회
+// 2. 최신 API 및 Best Practice 확인
+// 3. 올바른 패턴으로 구현
+```
+
+**주의사항**:
+- 라이브러리 버전 변경 시 항상 Context7로 Breaking Changes 확인
+- 새로운 기능 사용 시 Context7로 최신 API 문서 조회
+- 에러 해결 시 Context7로 관련 문서 검색
