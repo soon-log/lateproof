@@ -6,3 +6,6 @@
 Github MCP 사용 관련 정의
 - Github 저장소 위치 : soon-log/lateproof
 - Issue를 생성할 때 Label은 Label은 feat, chore, design, docs, fix, infra, refactor 중 택하여 적절하게 설정하세요.
+
+테스트 커버리지 90% 이상 준수
+파일당 코드의 줄 수는 500자를 넘기지 않도록 권장한다.
