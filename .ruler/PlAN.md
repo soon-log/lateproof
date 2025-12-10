@@ -9,7 +9,7 @@
 ## 📊 Current Status
 
 **현재 Phase**: `M1 — Foundation Setup`  
-**전체 진행률**: `9.0%` (14/155 tasks)  
+**전체 진행률**: `8.8%` (14/160 tasks)  
 **현재 작업 중**: 없음  
 **차단 요소**: 없음
 
@@ -23,10 +23,13 @@
 
 ### 다음 작업 (우선순위 순)
 
-1. **M1-E3-T05**: Storybook 설치
-2. **M1-E3-T06**: Atomic UI 컴포넌트 stories 작성
-3. **M1-E3-T03 (추가)**: Input, Modal 등 나머지 UI 컴포넌트 완성
-4. **M2-E1-T01**: Step Enum 정의 (Phase 2 시작 준비)
+1. **M1-E4-T01**: Vitest 설치 및 설정
+2. **M1-E4-T02**: Testing Library 설치 및 setup
+3. **M1-E4-T03**: MSW 설치 및 핸들러 구조 생성
+4. **M1-E4-T04**: Playwright 설치 및 설정
+5. **M1-E4-T05**: package.json 테스트 스크립트 추가
+6. **M1-E3-T05**: Storybook 설치
+7. **M2-E1-T01**: Step Enum 정의 (Phase 2 시작 준비)
 
 ---
 
@@ -54,15 +57,23 @@
 - [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (완료)
 - [ ] M1-E3-T05: Storybook 설치 (미완료)
 
+#### Epic 1.4 — Testing Environment Setup
+- [ ] M1-E4-T01: Vitest 설치 및 설정
+- [ ] M1-E4-T02: Testing Library 설치 및 setup
+- [ ] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
+- [ ] M1-E4-T04: Playwright 설치 및 설정
+- [ ] M1-E4-T05: package.json 테스트 스크립트 추가
+
 ### 통계
 - **완료**: 14 tasks
 - **진행 중**: 0 tasks
-- **남은 작업**: 141 tasks
+- **남은 작업**: 146 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
 - **M1-E2**: ✅ 100% (3/3 tasks) — Next.js + FSD 구조 완료
 - **M1-E3**: 🟡 66.7% (4/6 tasks) — UI Design System & Storybook 진행 중
+- **M1-E4**: 🔴 0% (0/5 tasks) — Testing Environment Setup 대기
 
 ---
 
@@ -76,13 +87,14 @@
 
 ### Phase별 체크리스트
 
-#### Phase 1: Foundation (M1) — 진행 중 (72.2% 완료)
+#### Phase 1: Foundation (M1) — 진행 중 (60.9% 완료)
 - [x] Next.js 프로젝트 초기화
 - [x] FSD 구조 완성
 - [x] Biome 설정
 - [x] 환경 변수 구조 설계 (.env.example)
 - [x] Vercel 배포 설정
 - [x] SG.md 스타일 시스템
+- [ ] Testing Environment 설정 (Vitest, Testing Library, MSW, Playwright)
 - [ ] Storybook 설치
 - [ ] 기본 UI 컴포넌트 완성 (Button만 완료)
 
@@ -253,6 +265,18 @@
 - Milestone 1 진행률: 72.2% (13/18 tasks)
 - Epic 1.3 진행률: 66.7% (4/6 tasks)
 - 다음 작업: Storybook 설치, UI 컴포넌트 완성
+
+### 2025-12-10 (최신)
+- **추가**: Epic 1.4 — Testing Environment Setup
+  - M1-E4-T01: Vitest 설치 및 설정
+  - M1-E4-T02: Testing Library 설치 및 setup
+  - M1-E4-T03: MSW 설치 및 핸들러 구조 생성
+  - M1-E4-T04: Playwright 설치 및 설정
+  - M1-E4-T05: package.json 테스트 스크립트 추가
+- 전체 Task 수: 155 → 160개
+- 진행률: 9.0% → 8.8% (14/160 tasks)
+- Milestone 1: 18 → 23 tasks (진행률 72.2% → 60.9%)
+- 다음 작업: Testing Environment 설정
 
 ---
 
