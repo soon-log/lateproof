@@ -32,11 +32,11 @@ ID 규칙:
 - [x] M1-E3-T05: Storybook 설치
 
 ## Epic 1.4 — Testing Environment Setup
-- [ ] M1-E4-T01: Vitest 설치 및 설정
-- [ ] M1-E4-T02: Testing Library 설치 및 setup 파일 작성
-- [ ] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
-- [ ] M1-E4-T04: Playwright 설치 및 설정
-- [ ] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+- [x] M1-E4-T01: Vitest 설치 및 설정
+- [x] M1-E4-T02: Testing Library 설치 및 setup 파일 작성
+- [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
+- [x] M1-E4-T04: Playwright 설치 및 설정
+- [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
 
 ---
 

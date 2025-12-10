@@ -39,8 +39,28 @@
           }
         }
       },
-      "complexity": "warn",
-      "performance": "warn",
+      "complexity": {
+        "noArguments": "error",
+        "noExcessiveCognitiveComplexity": "error",
+        "noExcessiveLinesPerFunction": "error",
+        "noBannedTypes": "error",
+        "noForEach": "warn",
+        "noImplicitCoercions": "off"
+      },
+      "performance": {
+        "noAccumulatingSpread": "warn",
+        "noAwaitInLoops": "warn",
+        "noDelete": "warn",
+        "noDynamicNamespaceImportAccess": "warn",
+        "noImgElement": "warn",
+        "noNamespaceImport": "warn",
+        "noReExportAll": "warn",
+        "noUnwantedPolyfillio": "warn",
+        "useGoogleFontPreconnect": "warn",
+        "useSolidForComponent": "warn",
+        "noBarrelFile": "off",
+        "useTopLevelRegex": "off"
+      },
       "security": "warn",
       "nursery": {
         "recommended": true,
