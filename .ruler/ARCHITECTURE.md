@@ -2,7 +2,7 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-10
+> **Last Updated**: 2025-12-10 (Epic 2.1 완료 — FSM 구축)
 
 ---
 
@@ -53,6 +53,15 @@ lateproof/
 │   │   └── README.md
 │   │
 │   ├── entities/             # Entities Layer (비즈니스 엔티티, 읽기 전용)
+│   │   ├── step/             # Step 엔티티 (워크플로우 상태 관리)
+│   │   │   ├── model/        # 도메인 모델
+│   │   │   │   ├── step.ts   # Step as const, STEP_META, STEP_ORDER
+│   │   │   │   ├── transition.ts  # FSM Transition Table
+│   │   │   │   ├── types.ts  # Mode, StepState, StepTransitionContext
+│   │   │   │   ├── store.ts  # Step FSM Store (Zustand)
+│   │   │   │   ├── store.test.ts  # Store Unit Test (14 tests)
+│   │   │   │   └── index.ts  # model Public API
+│   │   │   └── index.ts      # entity Public API
 │   │   └── README.md
 │   │
 │   ├── features/             # Features Layer (비즈니스 기능, 쓰기 작업)
@@ -150,15 +159,26 @@ Next.js 15 App Router의 루트 레이아웃과 페이지.
 
 ### `src/app/` — App Layer (FSD)
 
-앱 초기화, 전역 프로바이더, 상태 관리 설정.
+앱 초기화, 전역 프로바이더, 라우팅 설정.
+
+**현재 구조**:
+```
+src/app/
+└── README.md
+```
 
 **예정된 구조**:
 ```
 src/app/
-├── providers/          # React Query, Zustand 프로바이더
-├── store/              # FSM Store (Zustand)
+├── providers/          # React Query Provider (예정)
+│   └── query-provider.tsx
 └── README.md
 ```
+
+**역할**:
+- 전역 프로바이더 설정 (React Query, Theme 등)
+- 앱 레벨 라우팅 및 레이아웃 구성
+- **엔티티별 Store는 각 entities에 포함** (예: Step Store → entities/step/model/store.ts)
 
 ---
 
@@ -166,15 +186,51 @@ src/app/
 
 비즈니스 엔티티 정의. **읽기 전용 작업 (GET)** 중심.
 
-**예정된 구조**:
+**현재 구조**:
 ```
 src/entities/
-├── image/              # 이미지 엔티티
+├── step/               # Step 엔티티 (워크플로우 FSM)
+│   ├── model/
+│   │   ├── step.ts     # Step as const 패턴, STEP_META, STEP_ORDER
+│   │   ├── transition.ts  # TRANSITION_TABLE, canTransition, validateTransition
+│   │   ├── types.ts    # Mode, StepState, StepTransitionContext
+│   │   ├── store.ts    # Step FSM Store (Zustand)
+│   │   ├── store.test.ts  # Store Unit Test (14 tests)
+│   │   └── index.ts    # model Public API
+│   └── index.ts        # entity Public API
+└── README.md
+```
+
+**Step Entity 상세**:
+- **step.ts**: 
+  - `Step` (as const 패턴): `SELECT_MODE`, `UPLOAD`, `MATCH`, `PAYMENT`, `GENERATE`, `RESULT`
+  - `STEP_META`: 각 Step의 한글 라벨, 진행률(0~100), 뒤로가기 가능 여부
+  - `STEP_ORDER`: Step 순서 배열
+- **transition.ts**:
+  - `TRANSITION_TABLE`: FSM 기반 Step 전환 규칙 정의
+  - `canTransition()`: Step 전환 가능 여부 확인
+  - `validateTransition()`: 전환 검증 (실패 시 `TransitionError`)
+  - `getNextSteps()`: 현재 Step에서 이동 가능한 Step 목록 조회
+- **types.ts**:
+  - `Mode`: `PHOTO` | `MAP` (모드 선택)
+  - `StepState`: 현재 Step, 선택 모드, 전환 히스토리
+  - `StepTransitionContext`: Step 전환 컨텍스트 (from, to, timestamp, reason)
+- **store.ts** (Zustand FSM Store):
+  - `useStepStore`: Zustand FSM Store (devtools 포함)
+  - `setMode()`: 모드 선택 (PHOTO | MAP)
+  - `nextStep()`: Transition Table 검증 후 Step 전환
+  - `prevStep()`: 히스토리 기반 이전 Step 복원
+  - `reset()`: Store 초기화
+  - Selectors: `selectCurrentStep`, `selectMode`, `selectHistory`, `selectCanGoBack`
+- **store.test.ts**: 17개 Unit Test (Selector 테스트 포함, 모든 테스트 통과)
+
+**예정된 추가 Entity**:
+```
+src/entities/
+├── image/              # 이미지 엔티티 (예정)
 │   ├── model/          # 타입 정의
 │   └── ui/             # 이미지 뷰어 컴포넌트
-├── step/               # Step 엔티티 (FSM State)
-│   └── model/          # Step Enum, Transition Table
-└── payment/            # 결제 엔티티
+└── payment/            # 결제 엔티티 (예정)
     └── model/          # 결제 상태 타입
 ```
 
@@ -336,6 +392,17 @@ TypeScript 설정. Path Alias (`@/`) 정의.
 - 변경: [기존 구조] → [새 구조]
 - 삭제: [디렉토리/파일 경로] — [사유]
 ```
+
+---
+
+## 📅 변경 이력
+
+### 2025-12-10 업데이트
+- **추가**: `src/entities/step/model/store.ts` — Step FSM Store (Zustand)
+- **추가**: `src/entities/step/model/store.test.ts` — Store Unit Test (14 tests)
+- **변경**: `src/app/store/` → `src/entities/step/model/` — Store 위치 재배치
+- **사유**: Step Store는 Step 엔티티에만 종속되므로 entities/step에 포함하는 것이 FSD 원칙에 부합
+- **결정**: 엔티티별 Store는 해당 entities 내부에 배치 (App Layer는 여러 엔티티 조합 시에만 사용)
 
 ---
 

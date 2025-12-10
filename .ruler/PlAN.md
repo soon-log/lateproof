@@ -2,15 +2,15 @@
 
 > **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
 > **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
-> **Last Updated**: 2025-12-10
+> **Last Updated**: 2025-12-10 (Epic 2.1 — FSM 구축 완료)
 
 ---
 
 ## 📊 Current Status
 
-**현재 Phase**: `M1 — Foundation Setup`  
-**전체 진행률**: `12.5%` (20/160 tasks)  
-**현재 작업 중**: 없음  
+**현재 Phase**: `M2 — Photo Mode Core Flow`  
+**전체 진행률**: `14.4%` (23/160 tasks)  
+**현재 작업 중**: 없음 (Epic 2.1 완료)  
 **차단 요소**: 없음
 
 ---
@@ -19,14 +19,17 @@
 
 ### 지금 작업 중인 Task
 
-- [ ] 없음
+- [x] M2-E1-T01: Step Enum 정의 ✅ 완료
+- [x] M2-E1-T02: Transition Table 정의 ✅ 완료
+- [x] M2-E1-T03: Zustand FSM Store 구축 ✅ 완료
+
+**🎉 Epic 2.1 — FSM 구축 완료!**
 
 ### 다음 작업 (우선순위 순)
 
-1. **M2-E1-T01**: Step Enum 정의 (Phase 2 시작 준비)
-2. **M2-E1-T02**: Transition Table 정의
-3. **M2-E1-T03**: Zustand FSM Store 구축
-4. **필수 패키지 설치**: Zustand, React Query, Framer Motion
+1. **M2-E2-T01**: Photo/Map 선택 UI (SELECT_MODE Step 구현)
+2. **M2-E2-T02**: Step 이동 처리
+3. **필수 패키지 설치**: `pnpm add @tanstack/react-query framer-motion` (필요시)
 
 ---
 
@@ -61,16 +64,24 @@
 - [x] M1-E4-T04: Playwright 설치 및 설정 (playwright.config.ts, e2e/ 완료)
 - [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
 
+### Milestone 2 — Photo Mode Core Flow
+
+#### Epic 2.1 — FSM 구축 ✅ 완료
+- [x] M2-E1-T01: Step Enum 정의 (src/entities/step/model/step.ts)
+- [x] M2-E1-T02: Transition Table 정의 (src/entities/step/model/transition.ts)
+- [x] M2-E1-T03: Zustand FSM Store 구축 (src/entities/step/model/store.ts + store.test.ts)
+
 ### 통계
-- **완료**: 20 tasks
+- **완료**: 23 tasks
 - **진행 중**: 0 tasks
-- **남은 작업**: 140 tasks
+- **남은 작업**: 137 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
 - **M1-E2**: ✅ 100% (3/3 tasks) — Next.js + FSD 구조 완료
 - **M1-E3**: ✅ 100% (5/5 tasks) — UI Design System & Storybook 완료
 - **M1-E4**: ✅ 100% (5/5 tasks) — Testing Environment Setup 완료
+- **M2-E1**: ✅ 100% (3/3 tasks) — FSM 구축 완료
 
 ---
 
@@ -95,8 +106,10 @@
 - [x] Testing Environment 설정 (Vitest, Testing Library, MSW, Playwright)
 - [x] 기본 UI 컴포넌트 — Button 완료 및 테스트 작성
 
-#### Phase 2: Photo Mode (M2) — 대기
-- [ ] FSM 구축
+#### Phase 2: Photo Mode (M2) — 🚧 진행 중 (3/27 tasks, 11.1%)
+- [x] Step Enum 정의 (as const 패턴)
+- [x] Transition Table 정의 (FSM 규칙)
+- [x] Zustand FSM Store 구축 (14 tests 통과)
 - [ ] Step별 UI 구현
 - [ ] Azure Face API 연동
 - [ ] Toss Payments 연동
@@ -128,13 +141,15 @@
 ### 프로젝트 구조 현황
 
 ```
-/app               ✅ 존재 (layout.tsx, page.tsx, globals.css)
-/src/app           ✅ 존재 (README.md)
-/src/entities      ✅ 존재 (README.md)
-/src/features      ✅ 존재 (README.md)
-/src/pages         ✅ 존재 (README.md)
-/src/shared        ✅ 존재 (components/ui, lib)
-/src/widgets       ✅ 존재 (README.md)
+/app                     ✅ 존재 (layout.tsx, page.tsx, globals.css)
+/src/app                 ✅ 존재 (README.md)
+/src/entities            ✅ 존재 (README.md)
+  └── /step              ✅ 생성 완료 (Step Entity — FSM 완전 구현)
+      └── /model         ✅ step.ts, transition.ts, types.ts, store.ts, store.test.ts (14 tests)
+/src/features            ✅ 존재 (README.md)
+/src/pages               ✅ 존재 (README.md)
+/src/shared              ✅ 존재 (components/ui, lib)
+/src/widgets             ✅ 존재 (README.md)
 ```
 
 ### 설치된 패키지 (package.json 기준)
@@ -226,12 +241,3 @@
 2. 새로운 Phase 시작 시
 3. 차단 요소 발생 시
 4. 중요 결정 사항 발생 시
-
-**Update Format**:
-```
-## [날짜] 업데이트
-- 완료: [Task ID] [Task 설명]
-- 진행: [Task ID] [Task 설명]
-- 차단: [이슈 설명]
-- 결정: [의사결정 내용]
-```
