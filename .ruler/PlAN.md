@@ -9,7 +9,7 @@
 ## 📊 Current Status
 
 **현재 Phase**: `M1 — Foundation Setup`  
-**전체 진행률**: `8.8%` (14/160 tasks)  
+**전체 진행률**: `9.4%` (15/160 tasks)  
 **현재 작업 중**: 없음  
 **차단 요소**: 없음
 
@@ -28,8 +28,7 @@
 3. **M1-E4-T03**: MSW 설치 및 핸들러 구조 생성
 4. **M1-E4-T04**: Playwright 설치 및 설정
 5. **M1-E4-T05**: package.json 테스트 스크립트 추가
-6. **M1-E3-T05**: Storybook 설치
-7. **M2-E1-T01**: Step Enum 정의 (Phase 2 시작 준비)
+6. **M2-E1-T01**: Step Enum 정의 (Phase 2 시작 준비)
 
 ---
 
@@ -50,12 +49,12 @@
 - [x] M1-E2-T02: src/ 디렉토리 구조 생성 (src/ 완료)
 - [x] M1-E2-T03: FSD Layer 구축 (app/features/entities/shared/widgets 모두 존재)
 
-#### Epic 1.3 — UI Design System & Storybook
+#### Epic 1.3 — UI Design System & Storybook ✅ 완료
 - [x] M1-E3-T01: TailwindCSS 설치 (tailwindcss v4, globals.css 확인)
 - [x] M1-E3-T02: Shadcn 초기화 (components.json, @radix-ui/react-slot 확인)
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성 — Button만 완료 (shared/components/ui/button.tsx)
 - [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (완료)
-- [ ] M1-E3-T05: Storybook 설치 (미완료)
+- [x] M1-E3-T05: Storybook 설치 (완료 — v10.1.5, nextjs-vite)
 
 #### Epic 1.4 — Testing Environment Setup
 - [ ] M1-E4-T01: Vitest 설치 및 설정
@@ -65,14 +64,14 @@
 - [ ] M1-E4-T05: package.json 테스트 스크립트 추가
 
 ### 통계
-- **완료**: 14 tasks
+- **완료**: 15 tasks
 - **진행 중**: 0 tasks
-- **남은 작업**: 146 tasks
+- **남은 작업**: 145 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
 - **M1-E2**: ✅ 100% (3/3 tasks) — Next.js + FSD 구조 완료
-- **M1-E3**: 🟡 66.7% (4/6 tasks) — UI Design System & Storybook 진행 중
+- **M1-E3**: ✅ 100% (5/5 tasks) — UI Design System & Storybook 완료
 - **M1-E4**: 🔴 0% (0/5 tasks) — Testing Environment Setup 대기
 
 ---
@@ -87,15 +86,15 @@
 
 ### Phase별 체크리스트
 
-#### Phase 1: Foundation (M1) — 진행 중 (60.9% 완료)
+#### Phase 1: Foundation (M1) — 진행 중 (65.2% 완료)
 - [x] Next.js 프로젝트 초기화
 - [x] FSD 구조 완성
 - [x] Biome 설정
 - [x] 환경 변수 구조 설계 (.env.example)
 - [x] Vercel 배포 설정
 - [x] SG.md 스타일 시스템
+- [x] Storybook 설치 (v10.1.5, nextjs-vite)
 - [ ] Testing Environment 설정 (Vitest, Testing Library, MSW, Playwright)
-- [ ] Storybook 설치
 - [ ] 기본 UI 컴포넌트 완성 (Button만 완료)
 
 #### Phase 2: Photo Mode (M2) — 대기
@@ -221,65 +220,6 @@
 - E2E: Photo/Map Mode Happy Path (Playwright)
 
 ---
-
-## 💡 Decision Log
-
-### 2025-12-08 (22:55)
-- 프로젝트 초기 구조 확인
-- PLAN.md 생성 완료
-- 완료 작업 체크: M1-E1 (3/5), M1-E2 (3/3), M1-E3 (3/6)
-- 진행률: 6.5% (10/154 tasks)
-
-### 2025-12-08 (23:05)
-- **완료**: M1-E1-T03-1 Lefthook Git Hooks 설정
-  - lefthook.yml 생성 (pre-commit, pre-push, commit-msg hooks)
-  - package.json에 lefthook, test 스크립트 추가
-  - Conventional Commits 규칙 적용
-- 진행률: 7.1% (11/155 tasks)
-- Epic 1.1 완료: 4/6 tasks
-- 다음 작업: 환경 변수 구조 설계, SG.md 스타일 시스템, Storybook 설치
-
-### 2025-12-08 (23:30)
-- **완료**: M1-E1-T04, M1-E1-T05
-  - M1-E1-T04: Vercel 프로젝트 생성 (사용자 배포 완료)
-  - M1-E1-T05: 환경 변수 구조 설계 (.env.example 생성)
-- **Epic 1.1 완료**: Repository & Environment (6/6 tasks)
-- 진행률: 8.4% (13/155 tasks)
-- Milestone 1 진행률: 66.7% (12/18 tasks)
-- 다음 작업: SG.md 스타일 시스템, Storybook 설치, UI 컴포넌트 완성
-
-### 2025-12-09 (00:25)
-- **완료**: M1-E3-T04 — SG.md 기반 스타일 시스템 구축
-  - `.ruler/SG.md` 생성 (색상 팔레트, 타이포그래피, Spacing, Breakpoint 문서화)
-  - `app/globals.css` 수정 (Tailwind CSS v4 규격)
-    - @theme 블록에 브랜드 색상 정의 (Purple 계열)
-    - 커스텀 색상 변수 추가 (--color-brand-*, --color-neutral-*, 등)
-    - Typography Presets 추가 (heading-1, heading-2, body-lg, caption)
-    - 유틸리티 클래스 추가 (.bg-brand, .text-brand, .focus-ring, 등)
-  - `src/shared/components/ui/button.tsx` 수정
-    - 브랜드 Purple 색상 적용 (bg-brand-500, hover:bg-brand-600)
-    - rounded-lg (10px) 적용
-    - shadow 효과 추가
-    - xl 사이즈 추가
-- 진행률: 9.0% (14/155 tasks)
-- Milestone 1 진행률: 72.2% (13/18 tasks)
-- Epic 1.3 진행률: 66.7% (4/6 tasks)
-- 다음 작업: Storybook 설치, UI 컴포넌트 완성
-
-### 2025-12-10 (최신)
-- **추가**: Epic 1.4 — Testing Environment Setup
-  - M1-E4-T01: Vitest 설치 및 설정
-  - M1-E4-T02: Testing Library 설치 및 setup
-  - M1-E4-T03: MSW 설치 및 핸들러 구조 생성
-  - M1-E4-T04: Playwright 설치 및 설정
-  - M1-E4-T05: package.json 테스트 스크립트 추가
-- 전체 Task 수: 155 → 160개
-- 진행률: 9.0% → 8.8% (14/160 tasks)
-- Milestone 1: 18 → 23 tasks (진행률 72.2% → 60.9%)
-- 다음 작업: Testing Environment 설정
-
----
-
 ## 🔄 Update Protocol
 
 이 문서는 다음 시점에 업데이트됩니다:
