@@ -2,15 +2,15 @@
 
 > **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
 > **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
-> **Last Updated**: 2025-12-10 (Epic 2.1 — FSM 구축 완료)
+> **Last Updated**: 2025-12-10 (Epic 2.2 — SELECT_MODE Step 완료)
 
 ---
 
 ## 📊 Current Status
 
 **현재 Phase**: `M2 — Photo Mode Core Flow`  
-**전체 진행률**: `14.4%` (23/160 tasks)  
-**현재 작업 중**: 없음 (Epic 2.1 완료)  
+**전체 진행률**: `16.3%` (26/160 tasks)  
+**현재 작업 중**: 없음 (Epic 2.2 완료)  
 **차단 요소**: 없음
 
 ---
@@ -19,17 +19,17 @@
 
 ### 지금 작업 중인 Task
 
-- [x] M2-E1-T01: Step Enum 정의 ✅ 완료
-- [x] M2-E1-T02: Transition Table 정의 ✅ 완료
-- [x] M2-E1-T03: Zustand FSM Store 구축 ✅ 완료
+- [x] M2-E2-T01: Photo/Map 선택 UI ✅ 완료
+- [x] M2-E2-T02: Step 이동 처리 ✅ 완료
+- [x] M2-E2-T03: 페이지 전환 애니메이션 ✅ 완료
 
-**🎉 Epic 2.1 — FSM 구축 완료!**
+**🎉 Epic 2.2 — SELECT_MODE Step 완료!**
 
 ### 다음 작업 (우선순위 순)
 
-1. **M2-E2-T01**: Photo/Map 선택 UI (SELECT_MODE Step 구현)
-2. **M2-E2-T02**: Step 이동 처리
-3. **필수 패키지 설치**: `pnpm add @tanstack/react-query framer-motion` (필요시)
+1. **M2-E3-T01**: 이미지 업로드(Dropzone) (UPLOAD Step 구현)
+2. **M2-E3-T02**: orientation fix
+3. **필수 패키지 설치**: `pnpm add react-dropzone` (필요시)
 
 ---
 
@@ -71,10 +71,15 @@
 - [x] M2-E1-T02: Transition Table 정의 (src/entities/step/model/transition.ts)
 - [x] M2-E1-T03: Zustand FSM Store 구축 (src/entities/step/model/store.ts + store.test.ts)
 
+#### Epic 2.2 — SELECT_MODE Step ✅ 완료
+- [x] M2-E2-T01: Photo/Map 선택 UI (src/features/select-mode/ui/mode-card.tsx)
+- [x] M2-E2-T02: Step 이동 처리 (src/features/select-mode/ui/select-mode-view.tsx)
+- [x] M2-E2-T03: 페이지 전환 애니메이션 (src/widgets/step-router/ui/step-router.tsx)
+
 ### 통계
-- **완료**: 23 tasks
+- **완료**: 26 tasks
 - **진행 중**: 0 tasks
-- **남은 작업**: 137 tasks
+- **남은 작업**: 134 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
@@ -82,6 +87,7 @@
 - **M1-E3**: ✅ 100% (5/5 tasks) — UI Design System & Storybook 완료
 - **M1-E4**: ✅ 100% (5/5 tasks) — Testing Environment Setup 완료
 - **M2-E1**: ✅ 100% (3/3 tasks) — FSM 구축 완료
+- **M2-E2**: ✅ 100% (3/3 tasks) — SELECT_MODE Step 완료
 
 ---
 
@@ -106,11 +112,14 @@
 - [x] Testing Environment 설정 (Vitest, Testing Library, MSW, Playwright)
 - [x] 기본 UI 컴포넌트 — Button 완료 및 테스트 작성
 
-#### Phase 2: Photo Mode (M2) — 🚧 진행 중 (3/27 tasks, 11.1%)
+#### Phase 2: Photo Mode (M2) — 🚧 진행 중 (6/27 tasks, 22.2%)
 - [x] Step Enum 정의 (as const 패턴)
 - [x] Transition Table 정의 (FSM 규칙)
 - [x] Zustand FSM Store 구축 (14 tests 통과)
-- [ ] Step별 UI 구현
+- [x] SELECT_MODE Step UI 구현 (ModeCard, SelectModeView)
+- [x] StepRouter 구현 (Framer Motion 페이지 전환)
+- [x] Framer Motion 설치 및 애니메이션 적용
+- [ ] UPLOAD Step 구현
 - [ ] Azure Face API 연동
 - [ ] Toss Payments 연동
 - [ ] Nanobanana API 연동
@@ -164,17 +173,21 @@
 }
 ```
 
+### 설치된 필수 패키지
+
+- [x] `zustand` — FSM 상태 관리
+- [x] `framer-motion` — 애니메이션
+- [x] `@radix-ui/*` — Shadcn 기반 컴포넌트
+- [x] `vitest` — 테스트 프레임워크
+- [x] `@testing-library/react` — 컴포넌트 테스트
+- [x] `msw` — API Mocking
+- [x] `@playwright/test` — E2E 테스트
+- [x] `@storybook/react` — UI 카탈로그
+
 ### 아직 설치되지 않은 필수 패키지
 
-- [ ] `zustand` — FSM 상태 관리
 - [ ] `@tanstack/react-query` — 서버 상태 관리
-- [ ] `framer-motion` — 애니메이션
-- [ ] `@radix-ui/*` — Shadcn 기반 컴포넌트
-- [ ] `vitest` — 테스트 프레임워크
-- [ ] `@testing-library/react` — 컴포넌트 테스트
-- [ ] `msw` — API Mocking
-- [ ] `@playwright/test` — E2E 테스트
-- [ ] `@storybook/react` — UI 카탈로그
+- [ ] `react-dropzone` — 파일 업로드
 - [ ] `@googlemaps/js-api-loader` — Google Maps
 - [ ] `@azure/cognitiveservices-face` — Azure Face API
 - [ ] `@toss/payments` — Toss Payments

@@ -2,7 +2,7 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-10 (Epic 2.1 완료 — FSM 구축)
+> **Last Updated**: 2025-12-10 (Epic 2.2 완료 + FSD 구조 최종 정리)
 
 ---
 
@@ -27,9 +27,11 @@ lateproof/
 │   └── settings.json         # 워크스페이스 설정
 │
 ├── app/                      # Next.js App Router (루트 레이아웃, 페이지)
+│   ├── app/                  # "/app" 메인 애플리케이션 라우트
+│   │   └── page.tsx          # StepRouter 렌더링
 │   ├── globals.css           # 전역 스타일 (Tailwind CSS)
 │   ├── layout.tsx            # 루트 레이아웃
-│   └── page.tsx              # 루트 페이지
+│   └── page.tsx              # "/" 루트 페이지 (랜딩페이지 예정, 현재 /app 리다이렉트)
 │
 ├── e2e/                      # Playwright E2E 테스트
 │   ├── example.spec.ts       # 예제 E2E 테스트
@@ -49,7 +51,10 @@ lateproof/
 │   └── README.md
 │
 ├── src/                      # 소스 코드 (FSD 아키텍처)
-│   ├── app/                  # App Layer (앱 초기화, 프로바이더)
+│   ├── app/                  # App Layer (앱 초기화, 프로바이더, 라우팅)
+│   │   ├── router/           # Step 기반 라우터 (Segment)
+│   │   │   ├── step-router.tsx
+│   │   │   └── index.ts      # Public API
 │   │   └── README.md
 │   │
 │   ├── entities/             # Entities Layer (비즈니스 엔티티, 읽기 전용)
@@ -59,15 +64,26 @@ lateproof/
 │   │   │   │   ├── transition.ts  # FSM Transition Table
 │   │   │   │   ├── types.ts  # Mode, StepState, StepTransitionContext
 │   │   │   │   ├── store.ts  # Step FSM Store (Zustand)
-│   │   │   │   ├── store.test.ts  # Store Unit Test (14 tests)
+│   │   │   │   ├── store.test.ts  # Store Unit Test (17 tests)
 │   │   │   │   └── index.ts  # model Public API
 │   │   │   └── index.ts      # entity Public API
 │   │   └── README.md
 │   │
 │   ├── features/             # Features Layer (비즈니스 기능, 쓰기 작업)
+│   │   ├── select-mode/      # 모드 선택 기능
+│   │   │   ├── ui/           # UI 컴포넌트
+│   │   │   │   ├── mode-card.tsx
+│   │   │   │   ├── mode-card.test.tsx (7 tests)
+│   │   │   │   ├── mode-card.stories.tsx
+│   │   │   │   └── select-mode-view.tsx
+│   │   │   └── index.ts
 │   │   └── README.md
 │   │
 │   ├── pages/                # Pages Layer (페이지 조합)
+│   │   ├── select-mode/      # 모드 선택 페이지
+│   │   │   ├── ui/
+│   │   │   │   └── select-mode-page.tsx
+│   │   │   └── index.ts
 │   │   └── README.md
 │   │
 │   ├── shared/               # Shared Layer (공통 코드)
@@ -106,6 +122,27 @@ lateproof/
 ### FSD (Feature-Sliced Design)
 
 프로젝트는 **FSD 아키텍처**를 따른다. FSD는 계층형 구조로 비즈니스 로직을 분리하며, `processes` Layer는 제거되었다.
+
+#### FSD 구조 규칙
+
+**일반 Layer** (pages, widgets, features, entities):
+```
+Layer → Slice → Segment
+예: entities/user/model
+    features/auth/ui
+    pages/home/ui
+```
+
+**특수 Layer** (app, shared):
+```
+Layer → Segment (Slice 없음)
+예: app/router
+    app/providers
+    shared/ui
+    shared/lib
+```
+
+**중요**: `app`과 `shared` Layer는 **Slices 없이 바로 Segments**로 구성된다.
 
 #### Layer 정의
 
@@ -151,8 +188,14 @@ app → pages → widgets → features → entities → shared
 
 Next.js 15 App Router의 루트 레이아웃과 페이지.
 
+**라우팅 구조**:
+- `/` (루트): `app/page.tsx` — 랜딩페이지 (다음 커밋, 현재는 /app 리다이렉트)
+- `/app`: `app/app/page.tsx` — 메인 애플리케이션 (StepRouter 렌더링)
+
+**파일 역할**:
 - `layout.tsx`: 전역 레이아웃 (메타데이터, 폰트, 프로바이더)
 - `page.tsx`: 루트 페이지 (`/`)
+- `app/page.tsx`: 메인 애플리케이션 페이지 (`/app`)
 - `globals.css`: Tailwind CSS 전역 스타일
 
 ---
@@ -161,24 +204,55 @@ Next.js 15 App Router의 루트 레이아웃과 페이지.
 
 앱 초기화, 전역 프로바이더, 라우팅 설정.
 
-**현재 구조**:
+**현재 구조** (FSD 규칙 준수):
 ```
 src/app/
+├── router/             # Segment: Step 기반 라우터
+│   ├── step-router.tsx # FSM 기반 페이지 라우팅
+│   └── index.ts        # Public API
 └── README.md
 ```
 
-**예정된 구조**:
+**예정된 확장**:
 ```
 src/app/
-├── providers/          # React Query Provider (예정)
-│   └── query-provider.tsx
+├── router/             # Segment: Step 기반 라우터
+│   ├── step-router.tsx
+│   └── index.ts
+├── providers/          # Segment: React Query Provider (예정)
+│   ├── query-provider.tsx
+│   └── index.ts
 └── README.md
 ```
+
+**FSD 구조 규칙**: `app` Layer는 Slices 없이 바로 Segments로 구성 (router, providers 등)
 
 **역할**:
+- **Step 기반 라우팅**: `router/step-router.tsx`가 여러 Pages를 조합하여 애플리케이션 흐름 제어
 - 전역 프로바이더 설정 (React Query, Theme 등)
 - 앱 레벨 라우팅 및 레이아웃 구성
 - **엔티티별 Store는 각 entities에 포함** (예: Step Store → entities/step/model/store.ts)
+
+**의존성 흐름**:
+```
+app/app/page.tsx (Next.js App Router)
+  ↓
+src/app/router/step-router.tsx (App Layer)
+  ↓
+src/pages/select-mode/ (Pages Layer)
+src/pages/upload/ (예정)
+src/pages/match/ (예정)
+...
+```
+
+**Public API 노출**:
+```typescript
+// src/app/router/index.ts
+export { StepRouter } from './step-router';
+
+// app/app/page.tsx에서 사용
+import { StepRouter } from '@/app/router';
+```
 
 ---
 
@@ -240,20 +314,87 @@ src/entities/
 
 비즈니스 기능 구현. **쓰기 작업 (POST/PUT/DELETE, Server Actions)** 중심.
 
-**예정된 구조**:
+**현재 구조**:
 ```
 src/features/
-├── upload-image/       # 이미지 업로드 기능
+├── select-mode/        # 모드 선택 기능 (Epic 2.2 완료)
+│   ├── ui/
+│   │   ├── mode-card.tsx           # Photo/Map 선택 카드
+│   │   ├── mode-card.test.tsx      # 7 unit tests
+│   │   ├── mode-card.stories.tsx   # 4 Storybook stories
+│   │   └── select-mode-view.tsx    # 모드 선택 뷰
+│   └── index.ts
+└── README.md
+```
+
+**select-mode Feature 상세**:
+- **mode-card.tsx**:
+  - Photo/Map 모드 선택 카드 컴포넌트
+  - Framer Motion 애니메이션 (whileHover, whileTap)
+  - 브랜드 Purple 색상 시스템
+  - Stealth UX 준수 (자연스러운 언어)
+  - Props: icon, title, description, badge, onClick, isSelected
+- **select-mode-view.tsx**:
+  - 모드 선택 화면 전체 UI
+  - FSM Store 연동 (setMode, nextStep)
+  - 모드 선택 상태 관리
+  - "다음으로" 버튼 활성화/비활성화
+  - Stealth UX 문구 적용
+
+**Features Layer 판단 기준**:
+
+Features Layer는 다음 조건을 만족해야 한다:
+1. **사용자 의도 존재**: 선택, 등록, 수정, 삭제 등의 비즈니스 시나리오
+2. **쓰기 작업 수행**: POST/PUT/DELETE, Server Actions, Store 상태 변경
+3. **비즈니스 로직 포함**: 단순 표시가 아닌 실제 기능 구현
+
+**예시**:
+```typescript
+// ✅ features/select-mode (현재 구조)
+// - 사용자 의도: Photo/Map 모드 선택
+// - 쓰기 작업: setMode(), nextStep()
+// - 비즈니스 로직: 모드 선택 → 검증 → Store 업데이트 → Step 전환
+
+export function SelectModeView() {
+  const { setMode, nextStep } = useStepStore();
+  
+  const handleNext = () => {
+    setMode(selectedMode);  // ← 쓰기
+    nextStep();             // ← 쓰기
+  };
+}
+
+// ❌ entities — 읽기만 수행
+export function ModeDisplay() {
+  const mode = useStepStore(selectMode);  // ← 읽기만
+  return <div>{mode}</div>;
+}
+
+// ❌ widgets — 여러 features/entities 조합
+export function Header() {
+  return (
+    <header>
+      <StepIndicator />  // ← 조합
+      <UserMenu />       // ← 조합
+    </header>
+  );
+}
+```
+
+**예정된 추가 Feature**:
+```
+src/features/
+├── upload-image/       # 이미지 업로드 기능 (예정)
 │   ├── ui/             # Dropzone 컴포넌트
 │   └── api/            # Server Action
-├── match-faces/        # 얼굴 매칭 기능
+├── match-faces/        # 얼굴 매칭 기능 (예정)
 │   ├── ui/             # 원 선택 UI
 │   └── lib/            # 좌표 계산 로직
-├── verify-face/        # 얼굴 검증 기능
+├── verify-face/        # 얼굴 검증 기능 (예정)
 │   └── api/            # Azure Face API Wrapper
-├── process-payment/    # 결제 처리 기능
+├── process-payment/    # 결제 처리 기능 (예정)
 │   └── api/            # Toss Payments 연동
-└── generate-image/     # 이미지 생성 기능
+└── generate-image/     # 이미지 생성 기능 (예정)
     ├── ui/             # 생성 결과 UI
     └── api/            # Nanobanana API Wrapper
 ```
@@ -264,14 +405,29 @@ src/features/
 
 페이지 단위 조합. Features와 Entities를 조합하여 완전한 페이지 구성.
 
-**예정된 구조**:
+**현재 구조**:
 ```
 src/pages/
-├── select-mode/        # 모드 선택 페이지
-├── upload/             # 업로드 페이지
-├── match/              # 매칭 페이지
-├── payment/            # 결제 페이지
-└── result/             # 결과 페이지
+├── select-mode/        # 모드 선택 페이지 (Epic 2.2 완료)
+│   ├── ui/
+│   │   └── select-mode-page.tsx
+│   └── index.ts
+└── README.md
+```
+
+**select-mode Page 상세**:
+- **select-mode-page.tsx**:
+  - SelectModeView feature를 조합한 완전한 페이지
+  - FSD Pages Layer 역할 수행
+  - app/page.tsx에서 StepRouter를 통해 렌더링
+
+**예정된 추가 Page**:
+```
+src/pages/
+├── upload/             # 업로드 페이지 (예정)
+├── match/              # 매칭 페이지 (예정)
+├── payment/            # 결제 페이지 (예정)
+└── result/             # 결과 페이지 (예정)
 ```
 
 ---
@@ -280,13 +436,21 @@ src/pages/
 
 복합 UI 블록. 여러 Features와 Entities를 조합한 재사용 가능한 UI 단위.
 
-**예정된 구조**:
+**현재 구조**:
 ```
 src/widgets/
-├── header/             # 헤더
-├── step-indicator/     # Step 진행 표시기
-└── result-card/        # 결과 이미지 카드
+└── README.md
 ```
+
+**예정된 Widget**:
+```
+src/widgets/
+├── header/             # 헤더 (예정)
+├── step-indicator/     # Step 진행 표시기 (예정)
+└── result-card/        # 결과 이미지 카드 (예정)
+```
+
+**참고**: Step Router는 App Layer (`src/app/router/`)로 이동됨 (여러 Pages를 조합하여 애플리케이션 전체 라우팅 담당)
 
 ---
 
@@ -385,25 +549,6 @@ TypeScript 설정. Path Alias (`@/`) 정의.
 3. **아키텍처 패턴 변경 시**
 4. **주요 기능 개발 완료 시**
 
-**Update Format**:
-```markdown
-## [날짜] 업데이트
-- 추가: [디렉토리/파일 경로] — [설명]
-- 변경: [기존 구조] → [새 구조]
-- 삭제: [디렉토리/파일 경로] — [사유]
-```
-
----
-
-## 📅 변경 이력
-
-### 2025-12-10 업데이트
-- **추가**: `src/entities/step/model/store.ts` — Step FSM Store (Zustand)
-- **추가**: `src/entities/step/model/store.test.ts` — Store Unit Test (14 tests)
-- **변경**: `src/app/store/` → `src/entities/step/model/` — Store 위치 재배치
-- **사유**: Step Store는 Step 엔티티에만 종속되므로 entities/step에 포함하는 것이 FSD 원칙에 부합
-- **결정**: 엔티티별 Store는 해당 entities 내부에 배치 (App Layer는 여러 엔티티 조합 시에만 사용)
-
 ---
 
 ## 📌 Key Principles
@@ -411,17 +556,49 @@ TypeScript 설정. Path Alias (`@/`) 정의.
 ### 1. Single Responsibility
 각 Layer는 명확한 책임을 가진다.
 
+- **app**: 애플리케이션 초기화, 전역 프로바이더, 라우팅
+- **pages**: 페이지 단위 조합 (features + entities + widgets)
+- **widgets**: 복합 UI 블록 (여러 features/entities 조합)
+- **features**: 비즈니스 기능 (쓰기 작업 + 사용자 의도)
+- **entities**: 비즈니스 엔티티 (읽기 전용 + 순수 UI)
+- **shared**: 공통 코드 (UI 컴포넌트, 유틸, 훅, 상수)
+
 ### 2. Unidirectional Dependency
 상위 → 하위 방향으로만 의존성 흐름.
 
+```
+app → pages → widgets → features → entities → shared
+```
+
 ### 3. Isolation
 같은 Layer 간 참조 금지.
+
+**금지 예시**:
+```typescript
+// ❌ features/A → features/B (같은 Layer 참조 금지)
+// ❌ pages/A → pages/B (같은 Layer 참조 금지)
+
+// ✅ features/A → entities/B (하위 Layer 참조 허용)
+// ✅ pages/A → features/B (하위 Layer 참조 허용)
+```
 
 ### 4. Scalability
 기능 추가 시 기존 코드 수정 최소화.
 
 ### 5. Testability
 각 Layer는 독립적으로 테스트 가능.
+
+### 6. FSD 구조 규칙 준수
+
+**일반 Layer** (pages, widgets, features, entities):
+```
+Layer → Slice → Segment
+```
+
+**특수 Layer** (app, shared):
+```
+Layer → Segment (Slice 없음!)
+```
 
 ---
 

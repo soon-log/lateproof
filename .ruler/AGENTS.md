@@ -33,6 +33,52 @@
 - 삭제: [디렉토리/파일 경로] — [사유]
 ```
 
+## FSD 아키텍처 규칙
+
+### Layer 구조 규칙
+
+**일반 Layer** (pages, widgets, features, entities):
+```
+Layer → Slice → Segment
+
+예시:
+entities/user/model        ✅
+features/auth/ui           ✅
+pages/home/ui              ✅
+widgets/header/ui          ✅
+```
+
+**특수 Layer** (app, shared):
+```
+Layer → Segment (Slice 없음!)
+
+예시:
+app/router/step-router.tsx     ✅
+app/providers/query-provider.tsx  ✅
+shared/ui/button.tsx       ✅
+shared/lib/utils.ts        ✅
+
+app/router/ui/step-router.tsx  ❌ (ui는 불필요한 중첩)
+shared/components/ui/button.tsx  ✅ (components는 Segment)
+```
+
+**핵심 규칙**:
+1. `app`과 `shared` Layer는 **Slices 없이 바로 Segments**로 구성
+2. Segment 내부는 필요에 따라 추가 디렉토리 구성 가능 (예: `shared/components/ui/`)
+3. Public API는 각 Slice/Segment의 최상위에 `index.ts`로 노출
+
+### 의존성 규칙
+
+```
+app → pages → widgets → features → entities → shared
+```
+
+- 상위 Layer는 하위 Layer만 참조 가능
+- 같은 Layer 간 참조 금지
+- 하위 Layer는 상위 Layer 절대 참조 불가
+
+---
+
 ## Github MCP 사용 관련 정의
 
 - Github 저장소 위치: `soon-log/lateproof`

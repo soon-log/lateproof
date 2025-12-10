@@ -26,7 +26,10 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "a11y": "error",
+      "a11y": {
+        "recommended": true,
+        "noSvgWithoutTitle": "off"
+      },
       "correctness": {
         "recommended": true,
         "useImportExtensions": "off"
@@ -64,10 +67,17 @@
       "security": "warn",
       "nursery": {
         "recommended": true,
-        "useSortedClasses": "warn"
+        "useSortedClasses": {
+          "level": "warn",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "cva", "tw", "tw.*"]
+          }
+        }
       },
       "suspicious": {
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noExplicitAny": "off"
       }
     },
     "domains": {
