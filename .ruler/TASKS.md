@@ -43,9 +43,9 @@ ID 규칙:
 # Milestone 2 — Photo Mode Core Flow
 
 ## Epic 2.1 — FSM 구축
-- [ ] M2-E1-T01: Step Enum 정의
-- [ ] M2-E1-T02: Transition Table 정의
-- [ ] M2-E1-T03: Zustand FSM Store 구축
+- [x] M2-E1-T01: Step Enum 정의
+- [x] M2-E1-T02: Transition Table 정의
+- [x] M2-E1-T03: Zustand FSM Store 구축
 
 ## Epic 2.2 — SELECT_MODE Step
 - [ ] M2-E2-T01: Photo/Map 선택 UI

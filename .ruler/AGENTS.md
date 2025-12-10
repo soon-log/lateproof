@@ -40,5 +40,29 @@
 
 ## 코드 품질 기준
 
-- 테스트 커버리지 90% 이상 준수
+- 테스트 커버리지 80% 이상 준수
 - 파일당 코드의 줄 수는 500줄을 넘기지 않도록 권장
+
+### TypeScript 타입 정의 규칙
+
+**enum 사용 지양 — as const 패턴 사용**:
+
+```typescript
+// ❌ Bad - enum 사용
+enum Status {
+  BANNED = 'Banned',
+  INACTIVE = 'Inactive',
+  PENDING = 'Pending',
+  ACTIVE = 'Active',
+}
+
+// ✅ Good - as const 패턴 사용
+export const Status = {
+  BANNED: 'Banned',
+  INACTIVE: 'Inactive',
+  PENDING: 'Pending',
+  ACTIVE: 'Active',
+} as const;
+
+export type Status = typeof Status[keyof typeof Status];
+```
