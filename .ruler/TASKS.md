@@ -48,9 +48,9 @@ ID 규칙:
 - [x] M2-E1-T03: Zustand FSM Store 구축
 
 ## Epic 2.2 — SELECT_MODE Step
-- [ ] M2-E2-T01: Photo/Map 선택 UI
-- [ ] M2-E2-T02: Step 이동 처리
-- [ ] M2-E2-T03: 페이지 전환 애니메이션
+- [x] M2-E2-T01: Photo/Map 선택 UI
+- [x] M2-E2-T02: Step 이동 처리
+- [x] M2-E2-T03: 페이지 전환 애니메이션
 
 ## Epic 2.3 — UPLOAD Step
 - [ ] M2-E3-T01: 이미지 업로드(Dropzone)

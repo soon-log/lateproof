@@ -5,24 +5,24 @@ import type { ComponentProps } from 'react';
 import { cn } from '@/shared/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*="size-"])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive',
+  'inline-flex shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-lg font-semibold text-sm outline-none transition-all duration-200 focus-visible:ring-2 focus-visible:ring-accent-400 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg:not([class*="size-"])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
         default:
-          'bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 shadow-md hover:shadow-lg',
+          'bg-brand-500 text-white shadow-md hover:bg-brand-600 hover:shadow-lg active:bg-brand-700',
         destructive:
-          'bg-error text-white hover:bg-error/90 focus-visible:ring-error/20 shadow-md hover:shadow-lg',
+          'bg-error text-white shadow-md hover:bg-error/90 hover:shadow-lg focus-visible:ring-error/20',
         outline:
-          'border-2 border-brand-500 bg-background text-brand-700 hover:bg-brand-50 hover:border-brand-600 dark:border-brand-400 dark:text-brand-400 dark:hover:bg-brand-950',
+          'border-2 border-brand-500 bg-background text-brand-700 hover:border-brand-600 hover:bg-brand-50 dark:border-brand-400 dark:text-brand-400 dark:hover:bg-brand-950',
         secondary: 'bg-brand-100 text-brand-900 hover:bg-brand-200 active:bg-brand-300',
         ghost:
           'text-brand-700 hover:bg-brand-50 hover:text-brand-900 dark:text-brand-400 dark:hover:bg-brand-950',
-        link: 'text-brand-600 underline-offset-4 hover:underline hover:text-brand-700'
+        link: 'text-brand-600 underline-offset-4 hover:text-brand-700 hover:underline'
       },
       size: {
         default: 'h-10 px-4 py-2 has-[>svg]:px-3',
-        sm: 'h-8 rounded-lg gap-1.5 px-3 text-xs has-[>svg]:px-2.5',
+        sm: 'h-8 gap-1.5 rounded-lg px-3 text-xs has-[>svg]:px-2.5',
         lg: 'h-12 rounded-lg px-6 text-base has-[>svg]:px-5',
         xl: 'h-14 rounded-lg px-8 text-lg has-[>svg]:px-6',
         icon: 'size-10',
