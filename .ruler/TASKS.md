@@ -28,7 +28,6 @@ ID 규칙:
 - [x] M1-E3-T01: TailwindCSS 설치
 - [x] M1-E3-T02: Shadcn 초기화
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등) — Button만 완료
-<<<<<<< HEAD
 - [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축
 - [x] M1-E3-T05: Storybook 설치
 
@@ -38,10 +37,6 @@ ID 규칙:
 - [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
 - [x] M1-E4-T04: Playwright 설치 및 설정
 - [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
-=======
-- [ ] M1-E3-T04: SG.md 기반 스타일 시스템 구축
-- [ ] M1-E3-T05: Storybook 설치
->>>>>>> e3bdd75 (chore: Atomic UI Doc 제거)
 
 ---
 
