@@ -28,34 +28,41 @@ ID 규칙:
 - [x] M1-E3-T01: TailwindCSS 설치
 - [x] M1-E3-T02: Shadcn 초기화
 - [x] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등) — Button만 완료
-- [ ] M1-E3-T04: SG.md 기반 스타일 시스템 구축
-- [ ] M1-E3-T05: Storybook 설치
+- [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축
+- [x] M1-E3-T05: Storybook 설치
+
+## Epic 1.4 — Testing Environment Setup
+- [x] M1-E4-T01: Vitest 설치 및 설정
+- [x] M1-E4-T02: Testing Library 설치 및 setup 파일 작성
+- [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
+- [x] M1-E4-T04: Playwright 설치 및 설정
+- [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
 
 ---
 
 # Milestone 2 — Photo Mode Core Flow
 
 ## Epic 2.1 — FSM 구축
-- [ ] M2-E1-T01: Step Enum 정의
-- [ ] M2-E1-T02: Transition Table 정의
-- [ ] M2-E1-T03: Zustand FSM Store 구축
+- [x] M2-E1-T01: Step Enum 정의
+- [x] M2-E1-T02: Transition Table 정의
+- [x] M2-E1-T03: Zustand FSM Store 구축
 
 ## Epic 2.2 — SELECT_MODE Step
-- [ ] M2-E2-T01: Photo/Map 선택 UI
-- [ ] M2-E2-T02: Step 이동 처리
-- [ ] M2-E2-T03: 페이지 전환 애니메이션
+- [x] M2-E2-T01: Photo/Map 선택 UI + UI 테스트/스토리(ModeCard/SelectModeView)
+- [x] M2-E2-T02: Step 이동 처리 + Page 테스트/스토리(SelectModePage)
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) + StepHeader 스토리 추가
 
 ## Epic 2.3 — UPLOAD Step
-- [ ] M2-E3-T01: 이미지 업로드(Dropzone)
-- [ ] M2-E3-T02: orientation fix
-- [ ] M2-E3-T03: 확대/이동 기능
-- [ ] M2-E3-T04: 편집된 좌표 데이터 생성
+- [x] M2-E3-T01: 이미지 업로드(Dropzone) + 파일 상태 저장(entities/photo) + MATCH 이동 + UI/Page 테스트/스토리
 
 ## Epic 2.4 — MATCH Step
 - [ ] M2-E4-T01: 인물 원 5개까지 생성 기능
 - [ ] M2-E4-T02: 원 색상 선택
 - [ ] M2-E4-T03: 표정 선택 UI
 - [ ] M2-E4-T04: 좌표 Payload Builder
+- [ ] M2-E4-T05: orientation fix
+- [ ] M2-E4-T06: 확대/이동 기능
+- [ ] M2-E4-T07: 편집된 좌표 데이터 생성
 
 ## Epic 2.5 — 얼굴 검증
 - [ ] M2-E5-T01: Azure Face API Wrapper 작성

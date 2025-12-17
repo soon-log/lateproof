@@ -1,0 +1,2321 @@
+---
+alwaysApply: true
+---
+<!-- Source: .ruler/AGENTS.md -->
+
+# AGENTS.md
+
+항상 한글로 대답하세요.
+
+## 문서 관리 규칙
+
+### 코드 생성 이후 문서 업데이트
+코드 생성 및 기능 개발 완료 시 다음 문서들을 반드시 업데이트하세요:
+
+1. **.ruler/PLAN.md** — 완료된 Task 체크 및 진행 상황 수정
+2. **.ruler/TASKS.md** — Task 체크박스 업데이트
+3. **.ruler/ARCHITECTURE.md** — 프로젝트 구조 변경 시 업데이트
+
+### ARCHITECTURE.md 업데이트 규칙
+
+**업데이트가 필요한 시점**:
+- 새로운 디렉토리 또는 파일 추가 시
+- FSD Layer 구조 변경 시
+- 아키텍처 패턴 변경 시
+- 주요 기능 개발 완료 시 (Epic 단위)
+
+**업데이트 시 준수 사항**:
+- `.gitignore`에 등재된 항목은 ARCHITECTURE.md에서 제외
+- 구조에 대한 명확한 설명 포함
+- FSD 의존성 규칙 준수 여부 확인
+- Update Protocol 형식에 따라 변경 이력 기록
+
+**Update Format**:
+```markdown
+## [날짜] 업데이트
+- 추가: [디렉토리/파일 경로] — [설명]
+- 변경: [기존 구조] → [새 구조]
+- 삭제: [디렉토리/파일 경로] — [사유]
+```
+
+## FSD 아키텍처 규칙
+
+### Layer 구조 규칙
+
+**일반 Layer** (pages, widgets, features, entities):
+```
+Layer → Slice → Segment
+
+예시:
+entities/user/model        ✅
+features/auth/ui           ✅
+pages/home/ui              ✅
+widgets/header/ui          ✅
+```
+
+**특수 Layer** (app, shared):
+```
+Layer → Segment (Slice 없음!)
+
+예시:
+app/router/step-router.tsx     ✅
+app/providers/query-provider.tsx  ✅
+shared/ui/button.tsx       ✅
+shared/lib/utils.ts        ✅
+
+app/router/ui/step-router.tsx  ❌ (ui는 불필요한 중첩)
+shared/components/ui/button.tsx  ✅ (components는 Segment)
+```
+
+**핵심 규칙**:
+1. `app`과 `shared` Layer는 **Slices 없이 바로 Segments**로 구성
+2. Segment 내부는 필요에 따라 추가 디렉토리 구성 가능 (예: `shared/components/ui/`)
+3. Public API는 각 Slice/Segment의 최상위에 `index.ts`로 노출
+
+### 의존성 규칙
+
+```
+app → pages → widgets → features → entities → shared
+```
+
+- 상위 Layer는 하위 Layer만 참조 가능
+- 같은 Layer 간 참조 금지
+- 하위 Layer는 상위 Layer 절대 참조 불가
+
+---
+
+## Github MCP 사용 관련 정의
+
+- Github 저장소 위치: `soon-log/lateproof`
+- Issue 생성 시 Label: `feat`, `chore`, `design`, `docs`, `fix`, `infra`, `refactor` 중 적절하게 설정
+
+## 코드 품질 기준
+
+- 테스트 커버리지 80% 이상 준수
+- 파일당 코드의 줄 수는 500줄을 넘기지 않도록 권장
+
+## 테스트/스토리 강제 규칙
+
+### 대상
+
+- `src/**/ui/*.tsx` (pages/widgets/features/entities)
+- `src/shared/components/ui/*.tsx`
+
+### 필수 산출물
+
+1. **Unit Test 필수**: 동일 경로에 `*.test.tsx` 작성
+   - 최소 요구사항: 렌더링 + 핵심 인터랙션(클릭/비활성/로딩 등) 1개 이상 검증
+2. **Storybook Story 필수**: 동일 경로에 `*.stories.tsx` 작성
+   - 최소 요구사항: `Default` 포함, 그리고 핵심 상태 1개 이상(예: `Selected`, `Loading`, `Disabled`, `Error`) 추가
+
+### 예외/가이드
+
+- `index.ts`(Public API) 파일은 테스트/스토리 대상에서 제외
+- 훅/스토어 의존 UI(컨테이너 컴포넌트)는 **Story/Test를 위해 상태 주입이 가능한 형태**로 만들 것
+  - 권장: `Presentational(ui)` + `Controller(model)` 분리
+  - 또는: `flow`/`viewModel` 같은 **props 주입 옵션** 제공(단, React Hook 규칙을 위반하지 않도록 훅 호출은 항상 최상단에서 고정)
+
+## UI / 로직 분리 규칙 (지속 반영)
+화면 컴포넌트가 비대해지는 것을 방지하기 위해, 앞으로 모든 구현에서 UI와 로직을 분리하는 원칙을 **기본값**으로 적용합니다.
+
+### 로직은 `model`로 이동 (Hook 중심)
+- 상태/사이드이펙트/비즈니스 흐름은 훅으로 캡슐화합니다.
+- 단, **하나의 훅이 여러 관심사(예: 업로드 + Step 전환 + 라우팅 + 토스트)**를 동시에 갖지 않도록, 아래 “훅 책임 분리 규칙”을 **기본값**으로 적용합니다.
+
+### UI 컴포넌트는 “표현(Presentational)”로 유지
+- UI 컴포넌트는 가능한 한 props 기반으로 렌더링만 합니다.
+- 공통 버튼/헤더 등은 재사용 목적이 명확하면 `shared` 또는 `widgets`로 올립니다(FSD 의존성 규칙 준수).
+
+### 훅 책임 분리 규칙 (모든 상황 공통)
+
+**목표**: 훅의 책임을 “단일 관심사”로 쪼개 재사용/테스트/변경에 강하게 만든다.
+
+1. **코어 훅 vs 오케스트레이션 훅을 분리한다**
+   - **코어 훅(도메인/유틸)**: 한 가지 작업만 책임진다. 예) 파일 선택/프리뷰/업로드, 폼 상태/검증, 쿼리/뮤테이션 실행
+   - **오케스트레이션 훅(Flow/Controller)**: 여러 코어 훅을 조합하고 “화면/플로우 정책”을 결정한다. 예) Step 전환, 라우팅, 토스트/트래킹, 성공/실패 분기
+
+2. **Step 전환/라우팅/전역 스토어 연동은 원칙적으로 오케스트레이션 훅에서만 한다**
+   - 코어 훅은 `useStepStore()`, `router.push()` 같은 “앱 플로우 결정” 의존성을 직접 가지지 않는다.
+   - 예외가 필요하면 훅 이름/파일명에 의도를 드러낸다(예: `useUploadPhotoFlow`, `useSelectModeFlow`).
+
+3. **결합이 필요하면 “콜백 주입”으로 느슨하게 연결한다**
+   - 코어 훅은 `onSuccess/onError/onSettled` 또는 도메인에 맞는 `onUploaded` 같은 옵션을 받아, 성공/실패 “사건(event)”만 외부로 방출한다.
+   - 오케스트레이션 훅이 그 이벤트를 받아 Step 전환/토스트/추적을 수행한다.
+
+4. **훅의 반환값은 최소 API로 유지한다**
+   - 반환값이 “상태 + 액션”을 넘어 커지기 시작하면(예: 액션이 6개 이상, 서로 다른 책임의 상태가 섞임) 훅 분리를 우선 검토한다.
+
+5. **파일/네이밍 규칙으로 의도를 고정한다**
+   - 코어 훅: `use-<domain>.ts` (예: `use-photo-upload.ts`)
+   - 오케스트레이션 훅: `use-<domain>-flow.ts` 또는 `use-<domain>-controller.ts` (예: `use-upload-photo-flow.ts`)
+   - “Flow/Controller” 훅은 해당 Feature/Page 범위의 정책을 포함할 수 있다.
+
+## Biome Complexity 규칙 대응
+
+`biome lint/complexity/noExcessiveCognitiveComplexity` 경고를 예방하기 위해, JSX 내부(특히 `className`)에서 **중첩 삼항 연산자** 사용을 금지합니다.
+
+- **상태 도출(Derived State):** 복잡한 boolean 조건들은 `render` 이전에 `status`(예: `idle | active | error`) 같은 **단일 문자열 상태로 먼저 도출**합니다.
+- **매핑 분리:** 스타일 로직은 `status`를 키(key)로 하는 **매핑 객체(Lookup Table)**나 `cva`의 **variants**로 위임합니다.
+- **JSX 단순화:** JSX 내부에서는 `cn(base, statusMap[status])` 형태의 **단순 병합**만 수행하여 가독성을 확보합니다.
+- **리소스 일원화:** 텍스트 라벨이나 아이콘 또한 `status` 기반 매핑으로 관리하여 렌더링 분기를 최소화합니다.
+
+## 이미지 컴포넌트 규칙
+
+- 이미지를 렌더링할 때는 기본적으로 `next/image`를 사용합니다. (`import Image from 'next/image'`)
+- 예외: `blob:`/`data:` URL 기반 프리뷰처럼 최적화 파이프라인을 적용하기 어려운 경우에는 `unoptimized` 사용 또는 `<img>` 사용을 허용합니다(사유를 명확히 남기기).
+
+### TypeScript 타입 정의 규칙
+
+**enum 사용 지양 — as const 패턴 사용**:
+
+```typescript
+// ❌ Bad - enum 사용
+enum Status {
+  BANNED = 'Banned',
+  INACTIVE = 'Inactive',
+  PENDING = 'Pending',
+  ACTIVE = 'Active',
+}
+
+// ✅ Good - as const 패턴 사용
+export const Status = {
+  BANNED: 'Banned',
+  INACTIVE: 'Inactive',
+  PENDING: 'Pending',
+  ACTIVE: 'Active',
+} as const;
+
+export type Status = typeof Status[keyof typeof Status];
+```
+
+## 라이브러리 관리 규칙
+
+### Context7 사용
+
+**라이브러리 설치 및 사용 시 Context7 필수 활용**:
+
+라이브러리를 설치하거나 사용하기 전에 반드시 Context7 MCP를 사용하여 최신 문서와 사용법을 확인하세요.
+
+**적용 예시**:
+```typescript
+// ❌ Bad - Context7 조회 없이 설치
+// pnpm add zustand 후 추측으로 구현
+
+// ✅ Good - Context7로 최신 문서 확인 후 구현
+// 1. Context7로 zustand 문서 조회
+// 2. 최신 API 및 Best Practice 확인
+// 3. 올바른 패턴으로 구현
+```
+
+**주의사항**:
+- 라이브러리 버전 변경 시 항상 Context7로 Breaking Changes 확인
+- 새로운 기능 사용 시 Context7로 최신 API 문서 조회
+- 에러 해결 시 Context7로 관련 문서 검색
+
+
+
+<!-- Source: .ruler/ARCHITECTURE.md -->
+
+# LateProof — Architecture Documentation
+
+> **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
+> **갱신 방식**: 기능 개발 완료 시마다 업데이트  
+> **Last Updated**: 2025-12-17 (UI 테스트/스토리 보강 + Storybook/Vitest `next/image` 대응)
+
+---
+
+## 📁 Project Structure
+
+```
+lateproof/
+├── .ruler/                    # 프로젝트 문서화 (PRD, SG, TASKS, PLAN, AGENTS)
+│   ├── AGENTS.md             # AI Agent 지침
+│   ├── ARCHITECTURE.md       # 아키텍처 문서 (본 파일)
+│   ├── PlAN.md               # 구현 계획 및 진행 상황
+│   ├── PRD.md                # Product Requirements Document
+│   ├── SG.md                 # Style Guide
+│   ├── TASKS.md              # Task 관리
+│   └── ruler.toml            # Ruler 설정
+│
+├── .storybook/               # Storybook 설정
+│   ├── main.ts               # Storybook 메인 설정
+│   └── preview.ts            # 글로벌 데코레이터 및 파라미터
+│
+├── .vscode/                  # VSCode 설정
+│   └── settings.json         # 워크스페이스 설정
+│
+├── app/                      # Next.js App Router (루트 레이아웃, 페이지)
+│   ├── app/                  # "/app" 메인 애플리케이션 라우트
+│   │   └── page.tsx          # StepRouter 렌더링
+│   ├── globals.css           # 전역 스타일 (Tailwind CSS)
+│   ├── layout.tsx            # 루트 레이아웃
+│   └── page.tsx              # "/" 루트 페이지 (랜딩페이지 예정, 현재 /app 리다이렉트)
+│
+├── e2e/                      # Playwright E2E 테스트
+│   ├── example.spec.ts       # 예제 E2E 테스트
+│   └── README.md             # E2E 테스트 가이드
+│
+├── mocks/                    # MSW (Mock Service Worker)
+│   ├── handlers/             # API Mock 핸들러
+│   │   └── index.ts          # 핸들러 정의
+│   ├── browser.ts            # 브라우저 환경 MSW 설정
+│   ├── node.ts               # Node 환경 MSW 설정
+│   └── README.md             # MSW 사용 가이드
+│
+├── pages/                    # 기타 페이지 (필요시 사용)
+│   └── README.md
+│
+├── public/                   # 정적 파일 (이미지, 폰트 등)
+│   └── README.md
+│
+├── src/                      # 소스 코드 (FSD 아키텍처)
+│   ├── app/                  # App Layer (앱 초기화, 프로바이더, 라우팅)
+│   │   ├── router/           # Step 기반 라우터 (Segment)
+│   │   │   ├── step-router.tsx
+│   │   │   └── index.ts      # Public API
+│   │   └── README.md
+│   │
+│   ├── entities/             # Entities Layer (비즈니스 엔티티, 읽기 전용)
+│   │   ├── step/             # Step 엔티티 (워크플로우 상태 관리)
+│   │   │   ├── model/        # 도메인 모델
+│   │   │   │   ├── step.ts   # Step as const, STEP_META, STEP_ORDER
+│   │   │   │   ├── transition.ts  # FSM Transition Table
+│   │   │   │   ├── types.ts  # Mode, StepState, StepTransitionContext
+│   │   │   │   ├── store.ts  # Step FSM Store (Zustand)
+│   │   │   │   ├── store.test.ts  # Store Unit Test (17 tests)
+│   │   │   │   └── index.ts  # model Public API
+│   │   │   └── index.ts      # entity Public API
+│   │   └── README.md
+│   │
+│   ├── features/             # Features Layer (비즈니스 기능, 쓰기 작업)
+│   │   ├── select-mode/      # 모드 선택 기능
+│   │   │   ├── ui/           # UI 컴포넌트
+│   │   │   │   ├── mode-card.tsx
+│   │   │   │   ├── mode-card.test.tsx (7 tests)
+│   │   │   │   ├── mode-card.stories.tsx
+│   │   │   │   └── select-mode-view.tsx
+│   │   │   └── index.ts
+│   │   ├── upload-photo/     # 사진 업로드 기능
+│   │   │   ├── ui/
+│   │   │   │   ├── upload-dropzone.tsx
+│   │   │   │   └── upload-photo-view.tsx
+│   │   │   └── index.ts
+│   │   └── README.md
+│   │
+│   ├── pages/                # Pages Layer (페이지 조합)
+│   │   ├── select-mode/      # 모드 선택 페이지
+│   │   │   ├── ui/
+│   │   │   │   └── select-mode-page.tsx
+│   │   │   └── index.ts
+│   │   ├── upload-photo/     # 사진 업로드 페이지
+│   │   │   ├── ui/
+│   │   │   │   └── upload-photo-page.tsx
+│   │   │   └── index.ts
+│   │   └── README.md
+│   │
+│   ├── shared/               # Shared Layer (공통 코드)
+│   │   ├── components/       # 공통 UI 컴포넌트
+│   │   │   └── ui/           # Shadcn/UI 기반 컴포넌트
+│   │   │       ├── button.tsx
+│   │   │       ├── button.test.tsx
+│   │   │       └── button.stories.tsx
+│   │   └── lib/              # 공통 유틸리티
+│   │       ├── utils.ts      # cn() 등 유틸 함수
+│   │       ├── index.ts
+│   │       └── example.test.ts
+│   │
+│   └── widgets/              # Widgets Layer (복합 UI 블록)
+│       ├── step-header/      # Step 공통 헤더 위젯
+│       │   ├── ui/
+│       │   │   ├── step-header.tsx
+│       │   │   └── step-header.test.tsx
+│       │   └── index.ts
+│       └── README.md
+│
+├── .env.example              # 환경 변수 템플릿
+├── .gitignore                # Git 제외 파일
+├── biome.json                # Biome 설정 (Lint/Format)
+├── components.json           # Shadcn/UI 설정
+├── lefthook.yml              # Git Hooks 설정
+├── next.config.ts            # Next.js 설정
+├── package.json              # 패키지 의존성
+├── playwright.config.ts      # Playwright 설정
+├── postcss.config.mjs        # PostCSS 설정
+├── README.md                 # 프로젝트 README
+├── tsconfig.json             # TypeScript 설정
+├── vitest.config.ts          # Vitest 설정
+└── vitest.setup.ts           # Vitest Setup 파일
+```
+
+---
+
+## 🏗️ Architecture Patterns
+
+### FSD (Feature-Sliced Design)
+
+프로젝트는 **FSD 아키텍처**를 따른다. FSD는 계층형 구조로 비즈니스 로직을 분리하며, `processes` Layer는 제거되었다.
+
+#### FSD 구조 규칙
+
+**일반 Layer** (pages, widgets, features, entities):
+```
+Layer → Slice → Segment
+예: entities/user/model
+    features/auth/ui
+    pages/home/ui
+```
+
+**특수 Layer** (app, shared):
+```
+Layer → Segment (Slice 없음)
+예: app/router
+    app/providers
+    shared/ui
+    shared/lib
+```
+
+**중요**: `app`과 `shared` Layer는 **Slices 없이 바로 Segments**로 구성된다.
+
+#### Layer 정의
+
+| Layer | 역할 | 의존성 방향 |
+|-------|-----|-----------|
+| **app** | 앱 초기화, 프로바이더, 라우팅 설정 | → pages, features, entities, shared |
+| **pages** | 페이지 단위 조합 | → features, entities, widgets, shared |
+| **widgets** | 복합 UI 블록 (헤더, 푸터 등) | → features, entities, shared |
+| **features** | 비즈니스 기능 (쓰기 작업, Server Actions) | → entities, shared |
+| **entities** | 비즈니스 엔티티 (읽기 작업, 순수 UI) | → shared |
+| **shared** | 공통 코드 (UI 컴포넌트, 유틸, 훅) | 없음 (최하위) |
+
+#### 의존성 규칙
+
+- **상위 Layer는 하위 Layer만 참조 가능**
+- **같은 Layer 간 참조 금지**
+- **하위 Layer는 상위 Layer를 절대 참조 불가**
+
+```
+app → pages → widgets → features → entities → shared
+                    ↘            ↗
+```
+
+---
+
+## 📂 Directory Details
+
+### `.ruler/` — 프로젝트 문서화
+
+프로젝트의 모든 문서를 중앙 관리한다. AI Agent가 참조하는 핵심 문서.
+
+- `PRD.md`: 제품 요구사항 정의
+- `SG.md`: 스타일 가이드 (색상, 타이포그래피, Stealth UX)
+- `TASKS.md`: Milestone/Epic/Task 관리
+- `PlAN.md`: 구현 계획 및 진행 상황
+- `AGENTS.md`: AI Agent 지침
+- `ARCHITECTURE.md`: 아키텍처 문서 (본 파일)
+- `ruler.toml`: Ruler 도구 설정
+
+---
+
+### `app/` — Next.js App Router
+
+Next.js 15 App Router의 루트 레이아웃과 페이지.
+
+**라우팅 구조**:
+- `/` (루트): `app/page.tsx` — 랜딩페이지 (다음 커밋, 현재는 /app 리다이렉트)
+- `/app`: `app/app/page.tsx` — 메인 애플리케이션 (StepRouter 렌더링)
+
+**파일 역할**:
+- `layout.tsx`: 전역 레이아웃 (메타데이터, 폰트, 프로바이더)
+- `page.tsx`: 루트 페이지 (`/`)
+- `app/page.tsx`: 메인 애플리케이션 페이지 (`/app`)
+- `globals.css`: Tailwind CSS 전역 스타일
+
+---
+
+### `src/app/` — App Layer (FSD)
+
+앱 초기화, 전역 프로바이더, 라우팅 설정.
+
+**현재 구조** (FSD 규칙 준수):
+```
+src/app/
+├── router/             # Segment: Step 기반 라우터
+│   ├── step-router.tsx # FSM 기반 페이지 라우팅
+│   └── index.ts        # Public API
+└── README.md
+```
+
+**예정된 확장**:
+```
+src/app/
+├── router/             # Segment: Step 기반 라우터
+│   ├── step-router.tsx
+│   └── index.ts
+├── providers/          # Segment: React Query Provider (예정)
+│   ├── query-provider.tsx
+│   └── index.ts
+└── README.md
+```
+
+**FSD 구조 규칙**: `app` Layer는 Slices 없이 바로 Segments로 구성 (router, providers 등)
+
+**역할**:
+- **Step 기반 라우팅**: `router/step-router.tsx`가 여러 Pages를 조합하여 애플리케이션 흐름 제어
+- 전역 프로바이더 설정 (React Query, Theme 등)
+- 앱 레벨 라우팅 및 레이아웃 구성
+- **엔티티별 Store는 각 entities에 포함** (예: Step Store → entities/step/model/store.ts)
+
+**의존성 흐름**:
+```
+app/app/page.tsx (Next.js App Router)
+  ↓
+src/app/router/step-router.tsx (App Layer)
+  ↓
+src/pages/select-mode/ (Pages Layer)
+src/pages/upload/ (예정)
+src/pages/match/ (예정)
+...
+```
+
+**Public API 노출**:
+```typescript
+// src/app/router/index.ts
+export { StepRouter } from './step-router';
+
+// app/app/page.tsx에서 사용
+import { StepRouter } from '@/app/router';
+```
+
+---
+
+### `src/entities/` — Entities Layer (FSD)
+
+비즈니스 엔티티 정의. **읽기 전용 작업 (GET)** 중심.
+
+**현재 구조**:
+```
+src/entities/
+├── step/               # Step 엔티티 (워크플로우 FSM)
+│   ├── model/
+│   │   ├── step.ts     # Step as const 패턴, STEP_META, STEP_ORDER
+│   │   ├── transition.ts  # TRANSITION_TABLE, canTransition, validateTransition
+│   │   ├── types.ts    # Mode, StepState, StepTransitionContext
+│   │   ├── store.ts    # Step FSM Store (Zustand)
+│   │   ├── store.test.ts  # Store Unit Test (14 tests)
+│   │   └── index.ts    # model Public API
+│   └── index.ts        # entity Public API
+└── README.md
+```
+
+**Step Entity 상세**:
+- **step.ts**: 
+  - `Step` (as const 패턴): `SELECT_MODE`, `UPLOAD`, `MATCH`, `PAYMENT`, `GENERATE`, `RESULT`
+  - `STEP_META`: 각 Step의 한글 라벨, 진행률(0~100), 뒤로가기 가능 여부
+  - `STEP_ORDER`: Step 순서 배열
+- **transition.ts**:
+  - `TRANSITION_TABLE`: FSM 기반 Step 전환 규칙 정의
+  - `canTransition()`: Step 전환 가능 여부 확인
+  - `validateTransition()`: 전환 검증 (실패 시 `TransitionError`)
+  - `getNextSteps()`: 현재 Step에서 이동 가능한 Step 목록 조회
+- **types.ts**:
+  - `Mode`: `PHOTO` | `MAP` (모드 선택)
+  - `StepState`: 현재 Step, 선택 모드, 전환 히스토리
+  - `StepTransitionContext`: Step 전환 컨텍스트 (from, to, timestamp, reason)
+- **store.ts** (Zustand FSM Store):
+  - `useStepStore`: Zustand FSM Store (devtools 포함)
+  - `setMode()`: 모드 선택 (PHOTO | MAP)
+  - `nextStep()`: Transition Table 검증 후 Step 전환
+  - `prevStep()`: 히스토리 기반 이전 Step 복원
+  - `reset()`: Store 초기화
+  - Selectors: `selectCurrentStep`, `selectMode`, `selectHistory`, `selectCanGoBack`
+- **store.test.ts**: 17개 Unit Test (Selector 테스트 포함, 모든 테스트 통과)
+
+**예정된 추가 Entity**:
+```
+src/entities/
+├── image/              # 이미지 엔티티 (예정)
+│   ├── model/          # 타입 정의
+│   └── ui/             # 이미지 뷰어 컴포넌트
+└── payment/            # 결제 엔티티 (예정)
+    └── model/          # 결제 상태 타입
+```
+
+---
+
+### `src/features/` — Features Layer (FSD)
+
+비즈니스 기능 구현. **쓰기 작업 (POST/PUT/DELETE, Server Actions)** 중심.
+
+**현재 구조**:
+```
+src/features/
+├── select-mode/        # 모드 선택 기능 (Epic 2.2 완료)
+│   ├── ui/
+│   │   ├── mode-card.tsx           # Photo/Map 선택 카드
+│   │   ├── mode-card.test.tsx      # 7 unit tests
+│   │   ├── mode-card.stories.tsx   # 4 Storybook stories
+│   │   ├── select-mode-view.tsx    # 모드 선택 뷰(Presentational)
+│   │   ├── select-mode-view.test.tsx
+│   │   └── select-mode-view.stories.tsx
+│   └── index.ts
+├── upload-photo/       # 사진 업로드 기능 (Epic 2.3 진행 중)
+│   ├── model/
+│   │   ├── file.ts                # 파일 제약(크기/타입)
+│   │   ├── use-upload-dropzone.ts # Dropzone 로직 훅(react-dropzone 래핑)
+│   │   ├── use-photo-upload.ts    # 업로드 훅(파일 선택/프리뷰/업로드)
+│   │   └── use-upload-photo-flow.ts # Step 전환 오케스트레이션(성공 콜백 주입)
+│   ├── ui/
+│   │   ├── helper-text.tsx
+│   │   ├── helper-text.test.tsx
+│   │   ├── helper-text.stories.tsx
+│   │   ├── photo-preview.tsx       # 사진 미리보기(Next Image, blob 프리뷰는 unoptimized)
+│   │   ├── photo-preview.test.tsx
+│   │   ├── photo-preview.stories.tsx
+│   │   ├── upload-dropzone.tsx     # Dropzone UI (presentational)
+│   │   ├── upload-dropzone.test.tsx
+│   │   ├── upload-dropzone.stories.tsx
+│   │   ├── upload-photo-view.tsx   # 업로드 뷰 (flow 주입 가능)
+│   │   ├── upload-photo-view.test.tsx
+│   │   └── upload-photo-view.stories.tsx
+│   └── index.ts
+└── README.md
+```
+
+**select-mode Feature 상세**:
+- **mode-card.tsx**:
+  - Photo/Map 모드 선택 카드 컴포넌트
+  - Framer Motion 애니메이션 (whileHover, whileTap)
+  - 브랜드 Purple 색상 시스템
+  - Stealth UX 준수 (자연스러운 언어)
+  - Props: icon, title, description, badge, onClick, isSelected
+- **select-mode-view.tsx**:
+  - 모드 선택 화면 전체 UI
+  - props 기반(Presentational)으로 렌더링만 수행
+  - 선택 이벤트만 외부로 방출 (`setSelectedMode`)
+
+**Features Layer 판단 기준**:
+
+Features Layer는 다음 조건을 만족해야 한다:
+1. **사용자 의도 존재**: 선택, 등록, 수정, 삭제 등의 비즈니스 시나리오
+2. **쓰기 작업 수행**: POST/PUT/DELETE, Server Actions, Store 상태 변경
+3. **비즈니스 로직 포함**: 단순 표시가 아닌 실제 기능 구현
+
+**예시**:
+```typescript
+// ✅ features/select-mode (현재 구조)
+// - 사용자 의도: Photo/Map 모드 선택
+// - 쓰기 작업: setMode(), nextStep()
+// - 비즈니스 로직: 모드 선택 → 검증 → Store 업데이트 → Step 전환
+
+export function SelectModeView() {
+  const { setMode, nextStep } = useStepStore();
+  
+  const handleNext = () => {
+    setMode(selectedMode);  // ← 쓰기
+    nextStep();             // ← 쓰기
+  };
+}
+
+// ❌ entities — 읽기만 수행
+export function ModeDisplay() {
+  const mode = useStepStore(selectMode);  // ← 읽기만
+  return <div>{mode}</div>;
+}
+
+// ❌ widgets — 여러 features/entities 조합
+export function Header() {
+  return (
+    <header>
+      <StepIndicator />  // ← 조합
+      <UserMenu />       // ← 조합
+    </header>
+  );
+}
+```
+
+**예정된 추가 Feature**:
+```
+src/features/
+├── upload-image/       # 이미지 업로드 기능 (예정)
+│   ├── ui/             # Dropzone 컴포넌트
+│   └── api/            # Server Action
+├── match-faces/        # 얼굴 매칭 기능 (예정)
+│   ├── ui/             # 원 선택 UI
+│   └── lib/            # 좌표 계산 로직
+├── verify-face/        # 얼굴 검증 기능 (예정)
+│   └── api/            # Azure Face API Wrapper
+├── process-payment/    # 결제 처리 기능 (예정)
+│   └── api/            # Toss Payments 연동
+└── generate-image/     # 이미지 생성 기능 (예정)
+    ├── ui/             # 생성 결과 UI
+    └── api/            # Nanobanana API Wrapper
+```
+
+---
+
+### `src/pages/` — Pages Layer (FSD)
+
+페이지 단위 조합. Features와 Entities를 조합하여 완전한 페이지 구성.
+
+**현재 구조**:
+```
+src/pages/
+├── select-mode/        # 모드 선택 페이지 (Epic 2.2 완료)
+│   ├── ui/
+│   │   ├── select-mode-page.tsx
+│   │   ├── select-mode-page.test.tsx
+│   │   └── select-mode-page.stories.tsx
+│   └── index.ts
+├── upload-photo/       # 사진 업로드 페이지 (Epic 2.3 진행 중)
+│   ├── ui/
+│   │   ├── upload-photo-page.tsx
+│   │   ├── upload-photo-page.test.tsx
+│   │   └── upload-photo-page.stories.tsx
+│   └── index.ts
+└── README.md
+```
+
+**select-mode Page 상세**:
+- **select-mode-page.tsx**:
+  - SelectModeView feature를 조합한 완전한 페이지
+  - FSD Pages Layer 역할 수행
+  - app/page.tsx에서 StepRouter를 통해 렌더링
+
+**예정된 추가 Page**:
+```
+src/pages/
+├── match/              # 매칭 페이지 (예정)
+├── payment/            # 결제 페이지 (예정)
+└── result/             # 결과 페이지 (예정)
+```
+
+---
+
+### `src/widgets/` — Widgets Layer (FSD)
+
+복합 UI 블록. 여러 Features와 Entities를 조합한 재사용 가능한 UI 단위.
+
+**현재 구조**:
+```
+src/widgets/
+├── step-header/        # Step 공통 헤더 위젯
+│   ├── ui/
+│   │   ├── step-header.tsx
+│   │   ├── step-header.test.tsx
+│   │   └── step-header.stories.tsx
+│   └── index.ts
+└── README.md
+```
+
+**예정된 Widget**:
+```
+src/widgets/
+├── header/             # 헤더 (예정)
+├── step-indicator/     # Step 진행 표시기 (예정)
+└── result-card/        # 결과 이미지 카드 (예정)
+```
+
+**참고**: Step Router는 App Layer (`src/app/router/`)로 이동됨 (여러 Pages를 조합하여 애플리케이션 전체 라우팅 담당)
+
+---
+
+### `src/shared/` — Shared Layer (FSD)
+
+공통 코드. 프로젝트 전반에서 재사용되는 UI 컴포넌트, 유틸, 훅, 상수.
+
+**현재 구조**:
+```
+src/shared/
+├── components/
+│   └── ui/             # Shadcn/UI 기반 컴포넌트
+│       ├── button.tsx
+│       ├── button.test.tsx
+│       └── button.stories.tsx
+└── lib/
+    ├── utils.ts        # cn() 등 유틸 함수
+    ├── index.ts
+    └── example.test.ts
+```
+
+**예정된 확장**:
+```
+src/shared/
+├── components/
+│   └── ui/             # Button, Input, Modal, Card 등
+├── lib/                # 유틸 함수
+├── hooks/              # 커스텀 훅
+├── types/              # 공통 타입 정의
+└── constants/          # 상수 정의
+```
+
+---
+
+### `e2e/` — Playwright E2E 테스트
+
+Playwright 기반 E2E 테스트.
+
+**예정된 구조**:
+```
+e2e/
+├── photo-mode.spec.ts  # Photo Mode Happy Path
+├── map-mode.spec.ts    # Map Mode Happy Path
+└── README.md
+```
+
+---
+
+### `mocks/` — MSW (Mock Service Worker)
+
+API Mocking. 개발/테스트 환경에서 외부 API 대체.
+
+**현재 구조**:
+```
+mocks/
+├── handlers/
+│   └── index.ts        # Azure, Nanobanana, Google, Toss Mock
+├── browser.ts          # 브라우저 환경 MSW
+├── node.ts             # Node 환경 MSW
+└── README.md
+```
+
+---
+
+## 🛠️ Configuration Files
+
+### `biome.json`
+Biome Lint/Format 설정. ESLint + Prettier 대체.
+
+### `vitest.config.ts`
+Vitest 단위/통합 테스트 설정.
+
+### `playwright.config.ts`
+Playwright E2E 테스트 설정.
+
+### `lefthook.yml`
+Git Hooks 설정. pre-commit 시 Biome Lint/Format 자동 실행.
+
+### `components.json`
+Shadcn/UI 설정. 컴포넌트 설치 경로 및 스타일 정의.
+
+### `next.config.ts`
+Next.js 설정. 실험적 기능, 이미지 최적화 등.
+
+### `tsconfig.json`
+TypeScript 설정. Path Alias (`@/`) 정의.
+
+---
+
+## 🔄 Update Protocol
+
+이 문서는 다음 시점에 업데이트된다:
+
+1. **새로운 디렉토리/파일 추가 시**
+2. **Layer 구조 변경 시**
+3. **아키텍처 패턴 변경 시**
+4. **주요 기능 개발 완료 시**
+
+---
+
+## [2025-12-16] 업데이트
+- 추가: src/widgets/step-header/ — Step 공통 헤더 위젯(뒤로가기 조건 노출)
+- 변경: src/pages/select-mode/ui/select-mode-page.tsx — StepHeader로 공통 헤더 조합
+- 변경: src/pages/upload-photo/ui/upload-photo-page.tsx — StepHeader로 공통 헤더 조합
+- 변경: src/features/select-mode/ui/select-mode-view.tsx — 헤더 영역 제거(콘텐츠만 유지)
+- 변경: src/features/upload-photo/ui/upload-photo-view.tsx — 헤더/뒤로가기 제거, 미리보기 URL 언마운트 정리
+
+## [2025-12-17] 업데이트
+- 추가: src/features/upload-photo/model/use-upload-dropzone.ts — Dropzone 로직을 model 훅으로 분리
+- 추가: src/features/upload-photo/model/use-upload-photo-flow.ts — 업로드 성공 시 Step 전환을 외부 콜백으로 오케스트레이션
+- 변경: src/features/upload-photo/ui/upload-dropzone.tsx — UI 컴포넌트는 props 기반 렌더링만 수행
+- 변경: src/features/upload-photo/model/use-photo-upload.ts — 업로드 훅에서 Step 전환 제거(성공 콜백 주입)
+- 변경: src/features/upload-photo/ui/upload-photo-view.tsx — `useUploadPhotoFlow`로 Step 전환 의존성 분리
+- 변경: src/features/upload-photo/ui/photo-preview.tsx — 이미지 렌더링 `next/image`로 전환(프리뷰는 `unoptimized`)
+
+## [2025-12-17] 업데이트
+- 추가: src/features/select-mode/ui/select-mode-view.test.tsx — SelectModeView 유닛 테스트
+- 추가: src/features/select-mode/ui/select-mode-view.stories.tsx — SelectModeView 스토리
+- 추가: src/features/upload-photo/ui/*.test.tsx — UPLOAD UI 유닛 테스트
+- 추가: src/features/upload-photo/ui/*.stories.tsx — UPLOAD UI 스토리
+- 추가: src/pages/select-mode/ui/*.test.tsx — SELECT_MODE Page 유닛 테스트
+- 추가: src/pages/select-mode/ui/*.stories.tsx — SELECT_MODE Page 스토리
+- 추가: src/pages/upload-photo/ui/*.test.tsx — UPLOAD Page 유닛 테스트
+- 추가: src/pages/upload-photo/ui/*.stories.tsx — UPLOAD Page 스토리
+- 추가: src/widgets/step-header/ui/step-header.stories.tsx — StepHeader 스토리
+- 추가: .storybook/next-image.ts — Storybook에서 `next/image` 대체 렌더러
+- 변경: .storybook/main.ts — Storybook Vite alias(`next/image`) 설정
+- 변경: vitest.setup.ts — 테스트에서 `next/image` mock 추가
+- 변경: src/features/upload-photo/ui/upload-photo-view.tsx — 테스트/스토리용 flow 주입 지원
+- 변경: src/pages/upload-photo/ui/upload-photo-page.tsx — 테스트/스토리용 flow 주입 지원
+
+## 📌 Key Principles
+
+### 1. Single Responsibility
+각 Layer는 명확한 책임을 가진다.
+
+- **app**: 애플리케이션 초기화, 전역 프로바이더, 라우팅
+- **pages**: 페이지 단위 조합 (features + entities + widgets)
+- **widgets**: 복합 UI 블록 (여러 features/entities 조합)
+- **features**: 비즈니스 기능 (쓰기 작업 + 사용자 의도)
+- **entities**: 비즈니스 엔티티 (읽기 전용 + 순수 UI)
+- **shared**: 공통 코드 (UI 컴포넌트, 유틸, 훅, 상수)
+
+### 2. Unidirectional Dependency
+상위 → 하위 방향으로만 의존성 흐름.
+
+```
+app → pages → widgets → features → entities → shared
+```
+
+### 3. Isolation
+같은 Layer 간 참조 금지.
+
+**금지 예시**:
+```typescript
+// ❌ features/A → features/B (같은 Layer 참조 금지)
+// ❌ pages/A → pages/B (같은 Layer 참조 금지)
+
+// ✅ features/A → entities/B (하위 Layer 참조 허용)
+// ✅ pages/A → features/B (하위 Layer 참조 허용)
+```
+
+### 4. Scalability
+기능 추가 시 기존 코드 수정 최소화.
+
+### 5. Testability
+각 Layer는 독립적으로 테스트 가능.
+
+### 6. FSD 구조 규칙 준수
+
+**일반 Layer** (pages, widgets, features, entities):
+```
+Layer → Slice → Segment
+```
+
+**특수 Layer** (app, shared):
+```
+Layer → Segment (Slice 없음!)
+```
+
+---
+
+## 📚 References
+
+- [FSD Documentation](https://feature-sliced.design)
+- [Next.js App Router](https://nextjs.org/docs/app)
+- [Vitest](https://vitest.dev)
+- [Playwright](https://playwright.dev)
+- [MSW](https://mswjs.io)
+
+
+
+<!-- Source: .ruler/PlAN.md -->
+
+# LateProof — Implementation Plan
+
+> **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
+> **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
+> **Last Updated**: 2025-12-17 (SELECT_MODE/UPLOAD UI·Page 테스트/스토리 보강 + Storybook/Vitest next/image 대응 + 훅 주입형 ViewModel 지원)
+
+---
+
+## 📊 Current Status
+
+**현재 Phase**: `M2 — Photo Mode Core Flow`  
+**전체 진행률**: `16.9%` (27/160 tasks)  
+**현재 작업 중**: 없음 (M2-E3-T02 진행 대기)  
+**차단 요소**: 없음
+
+---
+
+## 🎯 Current Focus
+
+### 지금 작업 중인 Task
+
+- [x] M2-E2-T01: Photo/Map 선택 UI ✅ 완료
+- [x] M2-E2-T02: Step 이동 처리 ✅ 완료
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) ✅ 완료
+- [x] M2-E3-T01: 이미지 업로드(Dropzone) + UI/Page 테스트/스토리 ✅ 완료
+
+**🎉 Epic 2.2 — SELECT_MODE Step 완료!**
+
+### 다음 작업 (우선순위 순)
+
+1. **M2-E3-T02**: orientation fix
+2. **M2-E3-T03**: 확대/이동 기능
+3. **M2-E3-T04**: 편집된 좌표 데이터 생성
+
+---
+
+## ✅ Completed Tasks
+
+### Milestone 1 — Foundation Setup
+
+#### Epic 1.1 — Repository & Environment ✅ 완료
+- [x] M1-E1-T01: GitHub Repository 생성 (git repo 확인)
+- [x] M1-E1-T02: README 초기 템플릿 작성 (README.md 존재)
+- [x] M1-E1-T03: Biome 초기 설정 (biome.json 완전 설정 완료)
+- [x] M1-E1-T03-1: Lefthook Git Hooks 설정 (lefthook.yml 생성, package.json 스크립트 추가)
+- [x] M1-E1-T04: Vercel 프로젝트 생성 (사용자 확인 완료)
+- [x] M1-E1-T05: 환경 변수 구조 설계 (.env.example 생성 완료)
+
+#### Epic 1.2 — Next.js + FSD 구조
+- [x] M1-E2-T01: Next.js App Router 초기화 (app/layout.tsx, page.tsx 존재)
+- [x] M1-E2-T02: src/ 디렉토리 구조 생성 (src/ 완료)
+- [x] M1-E2-T03: FSD Layer 구축 (app/features/entities/shared/widgets 모두 존재)
+
+#### Epic 1.3 — UI Design System & Storybook ✅ 완료
+- [x] M1-E3-T01: TailwindCSS 설치 (tailwindcss v4, globals.css 확인)
+- [x] M1-E3-T02: Shadcn 초기화 (components.json, @radix-ui/react-slot 확인)
+- [x] M1-E3-T03: 기본 UI 컴포넌트 작성 — Button만 완료 (shared/components/ui/button.tsx)
+- [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축 (완료)
+- [x] M1-E3-T05: Storybook 설치 (완료 — v10.1.5, nextjs-vite)
+
+#### Epic 1.4 — Testing Environment Setup ✅ 완료
+- [x] M1-E4-T01: Vitest 설치 및 설정 (vitest.config.ts, vitest.setup.ts 생성)
+- [x] M1-E4-T02: Testing Library 설치 및 setup (@testing-library/react, jest-dom, user-event)
+- [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성 (src/mocks 완료)
+- [x] M1-E4-T04: Playwright 설치 및 설정 (playwright.config.ts, e2e/ 완료)
+- [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+
+### Milestone 2 — Photo Mode Core Flow
+
+#### Epic 2.1 — FSM 구축 ✅ 완료
+- [x] M2-E1-T01: Step Enum 정의 (src/entities/step/model/step.ts)
+- [x] M2-E1-T02: Transition Table 정의 (src/entities/step/model/transition.ts)
+- [x] M2-E1-T03: Zustand FSM Store 구축 (src/entities/step/model/store.ts + store.test.ts)
+
+#### Epic 2.2 — SELECT_MODE Step ✅ 완료
+- [x] M2-E2-T01: Photo/Map 선택 UI + UI 테스트/스토리 (src/features/select-mode/ui/mode-card.tsx, src/features/select-mode/ui/select-mode-view.tsx)
+- [x] M2-E2-T02: Step 이동 처리 + Page 테스트/스토리 (src/pages/select-mode/ui/select-mode-page.tsx)
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) + StepHeader 스토리 (src/app/router/step-router.tsx, src/widgets/step-header/ui/step-header.tsx)
+
+### 통계
+- **완료**: 27 tasks
+- **진행 중**: 0 tasks
+- **남은 작업**: 133 tasks
+
+### Epic 완료 현황
+- **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
+- **M1-E2**: ✅ 100% (3/3 tasks) — Next.js + FSD 구조 완료
+- **M1-E3**: ✅ 100% (5/5 tasks) — UI Design System & Storybook 완료
+- **M1-E4**: ✅ 100% (5/5 tasks) — Testing Environment Setup 완료
+- **M2-E1**: ✅ 100% (3/3 tasks) — FSM 구축 완료
+- **M2-E2**: ✅ 100% (3/3 tasks) — SELECT_MODE Step 완료
+- **M2-E3**: 🚧 25% (1/4 tasks) — UPLOAD Step 진행 중
+
+---
+
+## 🚧 Blocked Tasks
+
+현재 차단된 작업 없음.
+
+---
+
+## 📝 Implementation Notes
+
+### Phase별 체크리스트
+
+#### Phase 1: Foundation (M1) — ✅ 완료 (100%)
+- [x] Next.js 프로젝트 초기화
+- [x] FSD 구조 완성
+- [x] Biome 설정
+- [x] 환경 변수 구조 설계 (.env.example)
+- [x] Vercel 배포 설정
+- [x] SG.md 스타일 시스템
+- [x] Storybook 설치 (v10.1.5, nextjs-vite)
+- [x] Testing Environment 설정 (Vitest, Testing Library, MSW, Playwright)
+- [x] 기본 UI 컴포넌트 — Button 완료 및 테스트 작성
+
+#### Phase 2: Photo Mode (M2) — 🚧 진행 중 (7/27 tasks, 25.9%)
+- [x] Step Enum 정의 (as const 패턴)
+- [x] Transition Table 정의 (FSM 규칙)
+- [x] Zustand FSM Store 구축 (14 tests 통과)
+- [x] SELECT_MODE Step UI 구현 (ModeCard, SelectModeView)
+- [x] StepRouter 구현 (Framer Motion 페이지 전환)
+- [x] Framer Motion 설치 및 애니메이션 적용
+- [x] UPLOAD Step 구현
+- [ ] Azure Face API 연동
+- [ ] Toss Payments 연동
+- [ ] Nanobanana API 연동
+
+#### Phase 3: Map Mode (M3) — 대기
+- [ ] Google Maps SDK 연동
+- [ ] 장소 검색 UI
+- [ ] Prompt Builder
+
+#### Phase 4: AI Generation (M4) — 대기
+- [ ] 이미지 생성 로직
+- [ ] 메모리 관리
+
+#### Phase 5: Testing (M5) — 대기
+- [ ] Unit Test
+- [ ] Integration Test
+- [ ] E2E Test
+
+#### Phase 6: Deployment (M6) — 대기
+- [ ] QA
+- [ ] Sentry
+- [ ] Vercel 배포
+
+---
+
+## 🔍 Context for AI
+
+### 프로젝트 구조 현황
+
+```
+/app                     ✅ 존재 (layout.tsx, page.tsx, globals.css)
+/src/app                 ✅ 존재 (README.md)
+/src/entities            ✅ 존재 (README.md)
+  └── /step              ✅ 생성 완료 (Step Entity — FSM 완전 구현)
+      └── /model         ✅ step.ts, transition.ts, types.ts, store.ts, store.test.ts (14 tests)
+/src/features            ✅ 존재 (README.md)
+/src/pages               ✅ 존재 (README.md)
+/src/shared              ✅ 존재 (components/ui, lib)
+/src/widgets             ✅ 존재 (README.md)
+```
+
+### 설치된 패키지 (package.json 기준)
+
+```json
+{
+  "next": "^15.1.2",
+  "react": "^19.0.0",
+  "react-dom": "^19.0.0",
+  "tailwindcss": "^3.4.17",
+  "@biomejs/biome": "^1.9.4"
+}
+```
+
+### 설치된 필수 패키지
+
+- [x] `zustand` — FSM 상태 관리
+- [x] `framer-motion` — 애니메이션
+- [x] `@radix-ui/*` — Shadcn 기반 컴포넌트
+- [x] `vitest` — 테스트 프레임워크
+- [x] `@testing-library/react` — 컴포넌트 테스트
+- [x] `msw` — API Mocking
+- [x] `@playwright/test` — E2E 테스트
+- [x] `@storybook/react` — UI 카탈로그
+
+### 아직 설치되지 않은 필수 패키지
+
+- [ ] `@tanstack/react-query` — 서버 상태 관리
+- [ ] `react-dropzone` — 파일 업로드
+- [ ] `@googlemaps/js-api-loader` — Google Maps
+- [ ] `@azure/cognitiveservices-face` — Azure Face API
+- [ ] `@toss/payments` — Toss Payments
+
+---
+
+## 🎬 Next Actions
+
+### 즉시 수행 가능한 작업
+
+1. **Biome 설정 완성**
+   - `biome.json` 검증
+   - Lint/Format 규칙 설정
+
+2. **FSD 구조 완성**
+   - 각 Layer별 index.ts 생성
+   - 타입 정의 구조 설계
+
+3. **필수 패키지 설치**
+   - Zustand, React Query, Framer Motion
+
+4. **Storybook 초기 설정**
+   - 설치 및 기본 설정
+   - Button 컴포넌트 Story 작성
+
+### 준비 필요한 작업 (환경변수/인증)
+
+- Azure Face API 키
+- Google Maps API 키
+- Nanobanana API 키
+- Toss Payments 키
+
+---
+
+## 📌 Quick Reference
+
+### PRD 핵심 요약
+- **Flow**: SELECT_MODE → UPLOAD → MATCH → PAYMENT → GENERATE → RESULT
+- **AI**: Nanobanana (생성), Azure (검증)
+- **결제**: Toss Payments (300~500원)
+- **아키텍처**: FSD (features/entities/shared)
+- **상태관리**: Zustand FSM
+
+### 기술 스택
+- Next.js App Router
+- React 18
+- TailwindCSS + Shadcn/UI
+- Framer Motion
+- React Query + Zustand
+- Vitest + Playwright + Storybook
+- Biome
+
+### 테스트 전략
+- Unit: FSM, 얼굴 검증, Payload builder (50%+)
+- Integration: 업로드→검증→결제→생성 (MSW)
+- E2E: Photo/Map Mode Happy Path (Playwright)
+
+---
+## 🔄 Update Protocol
+
+이 문서는 다음 시점에 업데이트됩니다:
+
+1. Task 완료 시
+2. 새로운 Phase 시작 시
+3. 차단 요소 발생 시
+4. 중요 결정 사항 발생 시
+
+
+
+<!-- Source: .ruler/PRD.md -->
+
+# 📝 **LateProof — Product Requirements Document (PRD) v1.2**
+
+---
+
+# 1. 개요
+
+## 1.1 제품명
+
+**LateProof**
+
+## 1.2 목적
+
+부모님, 연인, 친구에게 필요한 순간에 자연스럽고 진짜처럼 보이는 “즉석 인증샷 이미지”를 생성해주는 서비스.
+사진 기반 또는 지도 기반으로 현실감 있는 인증샷을 3장 생성하여 다운로드 가능.
+
+## 1.3 핵심 가치
+
+* 난감한 순간을 **즉시 해결** (즉석 인증)
+* 진짜 같은 “아이폰 촬영 톤”의 이미지 생성
+* 원본 배경 100% 유지
+* 게스트 기반 1회성 툴
+* 데이터는 메모리 처리 후 즉시 삭제
+* 저렴한 단일 과금(300~500원)
+
+---
+
+# 2. 타깃 사용자
+
+| 사용자 그룹        | 니즈                   |
+| ------------- | -------------------- |
+| 10~30대        | 부모님/연인에게 인증 요청 받는 상황 |
+| 즉흥적 약속 사용자    | 사진을 바로 찍기 어려운 상황 해결  |
+| SNS·일상 인증 사용자 | 자연스러운 합성 인증샷 필요      |
+
+---
+
+# 3. 핵심 기능 요약
+
+1. 모드 선택 (사진 기반 / 지도 기반)
+2. 사진 업로드 또는 장소 선택
+3. 최대 5명 원 매칭 + 표정 선택
+4. 얼굴 품질 검증 (Azure)
+5. 결제 (Toss Payments)
+6. 3장 이미지 생성 (Nanobanana)
+7. 실패한 1장만 재생성 가능
+8. 다운로드
+
+---
+
+# 4. 사용자 흐름 (Flow)
+
+```
+SELECT_MODE → UPLOAD → MATCH → PAYMENT → GENERATE → RESULT
+```
+
+모든 Step 전환은 FSM(State Machine) 규칙에 따라 통제한다.
+
+---
+
+# 5. AI 이미지 생성 정책
+
+## 5.1 배경 처리
+
+* 원본 사진 배경 **100% 유지**
+* AI는 인물만 생성/보정
+* 조명·크기·위치는 AI 자동 조절
+
+## 5.2 인물 처리
+
+* 얼굴은 원본 이미지와 최대한 유사
+* 표정은 사용자가 선택한 이모지 기반
+* 피부톤 / 광원 자연감 우선
+* 최대 5명까지 생성 가능
+
+## 5.3 지도 기반 처리
+
+* 위도/경도 기반
+* Google Places의 지역 분위기를 반영
+* “실제 장소와 비슷한 이미지” 생성 (동일 장소는 아님)
+
+---
+
+# 6. Step 관리 방식
+
+* Zustand 기반 전역 상태
+* Transition Table 기반 FSM
+* 잘못된 Step 전환 시 차단
+* 서버 액션 성공 시에만 다음 Step 이동
+* Step 단위 UI 전환은 Framer Motion 적용
+
+---
+
+# 7. 기술 스택
+
+## 7.1 Frontend
+
+* Next.js (App Router)
+* React 18
+* TailwindCSS
+* Shadcn/UI
+* Framer Motion
+* React Query
+* Zustand(FSM)
+* Storybook (UI 카탈로그)
+
+## 7.2 Backend
+
+* Next.js Server Actions
+* Vercel Edge Functions
+
+## 7.3 AI
+
+* Nanobanana API (이미지 생성)
+* Azure Face API (품질 검증)
+
+## 7.4 지도
+
+* Google Maps JS SDK
+* Google Places API
+* Reverse Geocoding
+
+## 7.5 테스트
+
+* Vitest
+* React Testing Library
+* MSW(Mock Service Worker)
+* Playwright(E2E)
+
+## 7.6 Dev Tools
+
+* Biome
+* TypeScript
+* Sentry
+
+## 7.7 결제
+
+* Toss Payments
+
+---
+
+# 8. 아키텍처 (FSD)
+
+```
+app/
+features/
+entities/
+shared/
+(FSD — processes 제거)
+```
+
+* features = Write operations (POST/PUT/DELETE + Server Actions + 의도)
+* entities = Read operations (GET + pure UI view)
+* shared = lib/ui/hooks/utils/constants
+
+---
+
+# 9. 보안 & 정책
+
+* 비로그인 게스트 기반
+* 업로드 이미지는 메모리에만 존재 후 즉시 삭제
+* 데이터 저장 없음
+* 외부 AI 요청만 존재
+* 결제 외 개인정보 없음
+
+---
+
+# 10. 비용 구조
+
+* Nanobanana API 호출 횟수
+* Azure Face API 호출
+* Google Places 호출
+* Vercel 사용량
+* Toss Payments 수수료
+* 단발성 수익(300~500원/회)
+
+---
+
+# 11. **QA 및 테스트 요구사항 (핵심 추가 섹션)**
+
+LateProof는 사진 검증/결제/AI 합성 등 오류 요소가 많기 때문에
+**“사용자 안전을 위한 최소 보장 + 핵심 로직 완전 테스트”**를 목표로 한다.
+
+---
+
+## 11.1 테스트 도구
+
+* **Unit/Integration**: Vitest
+* **Component/UI**: React Testing Library
+* **API Mock**: MSW
+* **E2E**: Playwright
+
+---
+
+## 11.2 테스트 대상 범위
+
+### **(1) Unit Test**
+
+* Step FSM
+* 얼굴 검증 로직
+* Nanobanana payload builder
+* 장소 기반 프롬프트 생성
+* 이미지 재생성 로직
+* 파일 업로드 orientation 처리
+
+### **(2) Integration Test**
+
+* 업로드 → 검증 PASS 흐름
+* 검증 FAIL → Step 롤백
+* 결제 성공 시 Step 이동
+* 3장 생성 응답 처리
+* 단일 재생성 프로세스
+
+### **(3) E2E Test (2개)**
+
+* Photo Mode Happy Path
+* Map Mode Happy Path
+
+> 단, Azure/Nanobanana/Google/Toss 등 **비용 발생 API는 모두 Mock(MSW)**
+
+---
+
+## 11.3 테스트 커버리지 목표
+
+* Unit + Integration: **50% 이상**
+* Step FSM + Face 검증 + Generate 로직: **100% 필수 테스트 대상**
+* E2E는 Happy Path만 존재하므로 커버리지 제외
+
+---
+
+# 12. **Storybook 운영 정책 (신규)**
+
+## 12.1 목적
+
+* Design System 검증
+* 핵심 UI 카탈로그
+* Style Guide 준수 여부 확인
+* 개발자 스스로 UI regression 최소화
+
+## 12.2 Storybook 범위
+
+### 포함
+
+* Button
+* Input
+* Modal
+* Marker(인물 선택 원)
+* 표정 선택 UI
+* Dropzone
+* Result Image Card
+* Loading Shimmer
+* Navigation / Step Indicator
+
+### 제외
+
+* 페이지 단위 컴포넌트
+* Step 기반 Flow 스토리
+* API Mock 기반 스토리
+* 지도 UI 전체
+
+## 12.3 Storybook 파일 위치
+
+```
+shared/ui/[component]/index.tsx
+shared/ui/[component]/[component].stories.tsx
+```
+
+---
+
+# 13. 스타일 가이드
+
+(SG.md 별도 문서화 — 링크만 PRD에 명시)
+
+* 브랜드 키워드: 은밀함 / 자연스러움
+* 브랜드 문장: “엄마 저 친구랑 놀고있어요!”
+* 보랏빛 미니멀 컬러 시스템
+* UI/Animation/AI 스타일 정의
+
+---
+
+# **Appendix A — Test Scenarios**
+
+---
+
+## **A.1 Photo Mode Happy Path**
+
+| Step | Action        | Input      | Expected Result  |
+| ---- | ------------- | ---------- | ---------------- |
+| 1    | Photo Mode 선택 | —          | Step → UPLOAD    |
+| 2    | 이미지 업로드       | sample.jpg | 미리보기 표시          |
+| 3    | 얼굴 위치 조정      | 원 2개       | 좌표 Mapping 완료    |
+| 4    | 얼굴 검증         | Mock PASS  | Step → PAYMENT   |
+| 5    | 결제            | Mock 성공    | Step → GENERATE  |
+| 6    | AI 생성 요청      | Mock 3장    | Step → RESULT    |
+| 7    | 결과 확인         | —          | 3장 렌더링 / 다운로드 가능 |
+
+---
+
+## **A.2 Map Mode Happy Path**
+
+| Step | Action      | Input     | Expected Result |
+| ---- | ----------- | --------- | --------------- |
+| 1    | Map Mode 선택 | —         | 지도 표시           |
+| 2    | 장소 검색       | “홍대입구”    | Mock 장소 리스트     |
+| 3    | 장소 선택       | PlaceId   | 프롬프트 생성 완료      |
+| 4    | 원 매칭        | 1~3개      | 좌표 지정           |
+| 5    | 얼굴 검증       | Mock PASS | Step → PAYMENT  |
+| 6    | 결제          | Mock 성공   | Step → GENERATE |
+| 7    | AI 생성 요청    | Mock 3장   | Step → RESULT   |
+| 8    | 결과 확인       | —         | 3장 Node 렌더링     |
+
+
+
+<!-- Source: .ruler/SG.md -->
+
+# LateProof — Style Guide (SG.md)
+
+> **목적**: 프로젝트 전반의 일관된 디자인 시스템 정의  
+> **Last Updated**: 2025-12-09
+
+---
+
+## 🎨 브랜드 정체성
+
+### 키워드
+- **은밀함**: 자연스럽고 눈에 띄지 않는 UX
+- **자연스러움**: 진짜 같은 AI 이미지 생성
+
+### 브랜드 문장
+> "엄마 저 친구랑 놀고있어요!"
+
+경쾌하면서도 신뢰감을 주는 톤 유지
+
+### 디자인 철학
+- 보랏빛 미니멀 컬러 시스템
+- 아이폰 촬영 톤과 유사한 자연감
+- 게스트 기반 즉시 사용 가능한 단순함
+
+---
+
+## 🥷 Stealth UX 규칙
+
+### 핵심 원칙
+AI 기술을 전면에 노출하지 않고, 자연스러운 일상 언어로 사용자 경험을 구성한다.  
+브랜드 문장 **"엄마 저 친구랑 놀고있어요!"**의 맥락에 부합하는 은밀하고 편안한 톤을 유지한다.
+
+---
+
+### 1. AI/합성 단어 노출 최소화
+
+**피해야 할 표현**:
+- "AI가 생성 중입니다"
+- "이미지를 합성하고 있습니다"
+- "인공지능이 분석 중..."
+- "딥러닝 모델 처리"
+
+**권장 표현**:
+- "사진을 준비하고 있어요"
+- "자연스럽게 정리 중이에요"
+- "거의 다 됐어요"
+- "마무리하고 있어요"
+
+**적용 예시**:
+```tsx
+// ❌ Bad
+<Loading>AI가 이미지를 생성 중입니다...</Loading>
+
+// ✅ Good
+<Loading>사진을 자연스럽게 정리하고 있어요</Loading>
+```
+
+---
+
+### 2. 로딩 문구 — 상황 언어 중심
+
+기술적 프로세스가 아닌, 사용자가 기다리는 **결과**에 초점을 맞춘다.
+
+| Step | ❌ 기술 설명 | ✅ 상황 언어 |
+|------|-----------|-----------|
+| 업로드 | 파일을 업로드 중입니다 | 사진을 올리는 중이에요 |
+| 얼굴 검증 | AI가 얼굴을 분석 중입니다 | 사진을 확인하고 있어요 |
+| 생성 | 이미지를 합성하고 있습니다 | 거의 다 됐어요 |
+| 재생성 | 재생성 요청 처리 중 | 다시 정리하고 있어요 |
+| 다운로드 | 파일을 다운로드 중입니다 | 사진을 저장하고 있어요 |
+
+**톤 규칙**:
+- **~중입니다** ❌ → **~하고 있어요** ✅
+- 진행률은 백분율(%) 대신 단계 표현: "1/3 완료", "거의 다 됐어요"
+- 기술 오류 문구도 일상 언어로: "잠시 문제가 생겼어요. 다시 시도해주세요"
+
+---
+
+### 3. CTA — 일상적 표현 우선
+
+**피해야 할 표현**:
+- "AI 생성하기"
+- "이미지 합성 시작"
+- "처리 요청"
+- "변환하기"
+
+**권장 표현**:
+- "만들기"
+- "다음으로"
+- "확인하기"
+- "저장하기"
+- "다시 해보기"
+
+**적용 예시**:
+```tsx
+// ❌ Bad
+<Button>AI 이미지 생성하기</Button>
+
+// ✅ Good
+<Button>만들기</Button>
+
+// ❌ Bad
+<Button>재생성 요청</Button>
+
+// ✅ Good
+<Button>다시 해보기</Button>
+```
+
+---
+
+### 4. 결제 단계 — 강조 제한
+
+결제는 필수 단계이지만, 과도한 강조는 사용자에게 부담을 준다.
+
+**UI 규칙**:
+- ~~빨간색 강조~~ → 브랜드 Purple 유지
+- ~~"지금 결제하세요!"~~ → "확인하기"
+- ~~깜빡이는 애니메이션~~ → 부드러운 fade-in
+- ~~큰 폰트로 가격 강조~~ → 중립적 크기 (`text-base`, `text-lg`)
+
+**결제 버튼 스타일**:
+```tsx
+// ❌ Bad - 과도한 강조
+<Button 
+  variant="destructive" 
+  size="xl"
+  className="animate-pulse"
+>
+  🔥 지금 바로 결제하세요!
+</Button>
+
+// ✅ Good - 자연스러운 흐름
+<Button 
+  variant="default" 
+  size="default"
+>
+  확인하기
+</Button>
+```
+
+**가격 표시**:
+```tsx
+// ❌ Bad
+<div className="text-4xl font-bold text-error">
+  ₩500 <span className="text-xs">단 하루만!</span>
+</div>
+
+// ✅ Good
+<div className="text-lg text-neutral-700">
+  ₩500
+</div>
+```
+
+---
+
+### 5. 에러/경고 메시지
+
+기술적 오류도 일상 언어로 번역한다.
+
+| 오류 상황 | ❌ 기술 메시지 | ✅ 일상 언어 |
+|----------|-------------|-----------|
+| 얼굴 검증 실패 | Face detection failed | 사진에서 얼굴을 찾을 수 없어요 |
+| 파일 용량 초과 | File size exceeds 10MB | 사진 크기가 너무 커요 (10MB 이하) |
+| API 오류 | 500 Internal Server Error | 잠시 문제가 생겼어요. 다시 시도해주세요 |
+| 결제 실패 | Payment gateway timeout | 결제가 완료되지 않았어요 |
+| 재생성 제한 | Regeneration limit reached | 재시도 횟수를 초과했어요 |
+
+**톤 규칙**:
+- 단정적 부정문(~할 수 없습니다) → 부드러운 설명(~어요)
+- 에러 코드 노출 최소화
+- 해결 방법을 함께 제시: "다시 시도해주세요", "다른 사진을 올려보세요"
+
+---
+
+### 6. UI 컴포넌트별 적용
+
+#### 로딩 스피너
+```tsx
+// ❌ Bad
+<Spinner>AI Processing...</Spinner>
+
+// ✅ Good
+<Spinner>잠시만 기다려주세요</Spinner>
+```
+
+#### Toast 알림
+```tsx
+// ❌ Bad
+toast.success('Image synthesis completed successfully');
+
+// ✅ Good
+toast.success('사진이 준비됐어요');
+```
+
+#### 단계 표시
+```tsx
+// ❌ Bad
+<Steps>
+  <Step>Upload</Step>
+  <Step>AI Processing</Step>
+  <Step>Result</Step>
+</Steps>
+
+// ✅ Good
+<Steps>
+  <Step>사진 올리기</Step>
+  <Step>확인하기</Step>
+  <Step>완료</Step>
+</Steps>
+```
+
+---
+
+### 7. 카피라이팅 원칙
+
+**DO**:
+- 2인칭 존댓말 사용 (~해주세요, ~하시겠어요?)
+- 짧고 명확한 문장
+- 긍정적 어조 유지
+- 행동 유도는 부드럽게
+
+**DON'T**:
+- 기술 용어 남발
+- AI/합성/알고리즘 등 단어 노출
+- 과장된 표현 ("세계 최고", "혁신적")
+- 압박감 조성 ("지금 바로", "서두르세요")
+
+---
+
+### 8. 접근성과의 균형
+
+Stealth UX는 스크린 리더 사용자에게도 명확해야 한다.
+
+```tsx
+// ✅ Good - aria-label은 명확하게
+<button aria-label="사진 생성하기">
+  만들기
+</button>
+
+// ✅ Good - Loading 상태 명확히
+<div role="status" aria-live="polite">
+  사진을 준비하고 있어요
+</div>
+```
+
+---
+
+## 🎯 Stealth UX 체크리스트
+
+프로덕션 배포 전 확인:
+
+- [ ] 모든 로딩 메시지에서 "AI", "합성", "생성" 제거
+- [ ] CTA 버튼 텍스트 일상 언어로 변경
+- [ ] 결제 화면 과도한 강조 제거
+- [ ] 에러 메시지 일상 언어로 번역
+- [ ] Toast 알림 톤 점검
+- [ ] Step Indicator 라벨 확인
+- [ ] 스크린 리더 테스트 (aria-label 명확성)
+
+---
+
+## 🌈 색상 팔레트
+
+### Primary (Purple — 브랜드 메인)
+
+```css
+--color-brand-50: #faf5ff    /* 배경 강조, hover 상태 */
+--color-brand-100: #f3e8ff   /* 서브 배경 */
+--color-brand-200: #e9d5ff   /* 비활성 상태 */
+--color-brand-500: #a855f7   /* 메인 브랜드 컬러 */
+--color-brand-600: #9333ea   /* hover/active 상태 */
+--color-brand-700: #7e22ce   /* 강조 텍스트 */
+--color-brand-900: #581c87   /* 헤딩, 강한 강조 */
+```
+
+**사용 예시**:
+- Primary Button: `bg-brand-500 hover:bg-brand-600`
+- 링크: `text-brand-700 hover:text-brand-600`
+- 배경 강조: `bg-brand-50`
+
+---
+
+### Neutral (Gray — 텍스트/UI 기반)
+
+```css
+--color-neutral-50: #fafafa   /* 카드 배경 */
+--color-neutral-100: #f5f5f5  /* 입력 필드 배경 */
+--color-neutral-200: #e5e5e5  /* 구분선 */
+--color-neutral-400: #a3a3a3  /* 비활성 텍스트 */
+--color-neutral-500: #737373  /* 보조 텍스트 */
+--color-neutral-700: #404040  /* 서브 헤딩 */
+--color-neutral-900: #171717  /* 주 텍스트 */
+```
+
+**사용 예시**:
+- 주 텍스트: `text-neutral-900`
+- 보조 텍스트: `text-neutral-500`
+- Border: `border-neutral-200`
+
+---
+
+### Accent (Violet/Indigo — 인터랙티브 요소)
+
+```css
+--color-accent-400: #a78bfa  /* Focus ring, 선택 상태 */
+--color-accent-500: #8b5cf6  /* Interactive hover */
+--color-indigo-500: #6366f1  /* 링크, CTA 버튼 보조 */
+```
+
+**사용 예시**:
+- Focus ring: `ring-accent-400`
+- Interactive hover: `hover:bg-accent-500`
+
+---
+
+### Semantic (상태 피드백)
+
+```css
+--color-success: #22c55e   /* 성공, 완료 */
+--color-warning: #f59e0b   /* 경고, 주의 */
+--color-error: #ef4444     /* 오류, 실패 */
+--color-info: #3b82f6      /* 정보, 안내 */
+```
+
+**사용 예시**:
+- 성공 Toast: `bg-success text-white`
+- 오류 메시지: `text-error`
+
+---
+
+## 📐 타이포그래피
+
+### Font Family
+
+```css
+--font-sans: system-ui, -apple-system, "Pretendard", "Apple SD Gothic Neo", sans-serif;
+--font-mono: "SF Mono", Menlo, Monaco, Consolas, monospace;
+```
+
+- **본문**: `font-sans` 사용
+- **코드/데이터**: `font-mono` 사용
+
+---
+
+### Font Size
+
+| 토큰 | 크기 (rem) | 크기 (px) | 용도 |
+|------|-----------|----------|------|
+| `xs` | 0.75rem | 12px | Caption, 라벨 |
+| `sm` | 0.875rem | 14px | 보조 텍스트 |
+| `base` | 1rem | 16px | 본문 |
+| `lg` | 1.125rem | 18px | 부제목 |
+| `xl` | 1.25rem | 20px | 소제목 |
+| `2xl` | 1.5rem | 24px | 섹션 제목 |
+| `3xl` | 1.875rem | 30px | 페이지 제목 |
+| `4xl` | 2.25rem | 36px | Hero 제목 |
+
+---
+
+### Font Weight
+
+| 토큰 | 값 | 용도 |
+|------|-----|------|
+| `regular` | 400 | 본문 |
+| `medium` | 500 | 강조 텍스트 |
+| `semibold` | 600 | 버튼, 라벨 |
+| `bold` | 700 | 헤딩 |
+
+---
+
+### Line Height
+
+| 토큰 | 값 | 용도 |
+|------|-----|------|
+| `tight` | 1.25 | 헤딩 |
+| `normal` | 1.5 | 본문 |
+| `relaxed` | 1.75 | 긴 텍스트 |
+
+---
+
+### Typography Presets
+
+```css
+/* Heading 1 */
+.heading-1 {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-neutral-900);
+}
+
+/* Heading 2 */
+.heading-2 {
+  font-size: 1.875rem; /* 30px */
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-neutral-900);
+}
+
+/* Body Large */
+.body-lg {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.75;
+  color: var(--color-neutral-700);
+}
+
+/* Body Regular */
+.body {
+  font-size: 1rem; /* 16px */
+  line-height: 1.5;
+  color: var(--color-neutral-900);
+}
+
+/* Body Small */
+.body-sm {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.5;
+  color: var(--color-neutral-700);
+}
+
+/* Caption */
+.caption {
+  font-size: 0.75rem; /* 12px */
+  color: var(--color-neutral-500);
+}
+```
+
+---
+
+## 📏 Spacing System
+
+**8px 기반 시스템** 사용
+
+| 토큰 | 값 (rem) | 값 (px) | 용도 |
+|------|---------|---------|------|
+| `0.5` | 0.125rem | 2px | 아이콘 간격 |
+| `1` | 0.25rem | 4px | 미세 간격 |
+| `2` | 0.5rem | 8px | 최소 간격 |
+| `3` | 0.75rem | 12px | 작은 간격 |
+| `4` | 1rem | 16px | 기본 간격 |
+| `5` | 1.25rem | 20px | 중간 간격 |
+| `6` | 1.5rem | 24px | 섹션 내 간격 |
+| `8` | 2rem | 32px | 큰 간격 |
+| `10` | 2.5rem | 40px | 섹션 간격 |
+| `12` | 3rem | 48px | 페이지 여백 |
+| `16` | 4rem | 64px | 큰 페이지 여백 |
+| `20` | 5rem | 80px | Hero 섹션 여백 |
+
+---
+
+## 📱 Breakpoints
+
+```css
+/* Mobile First 방식 */
+sm: 640px   /* 작은 태블릿 */
+md: 768px   /* 태블릿 */
+lg: 1024px  /* 데스크탑 */
+xl: 1280px  /* 큰 데스크탑 */
+2xl: 1536px /* 와이드 스크린 */
+```
+
+**사용 예시**:
+```html
+<div class="px-4 md:px-8 lg:px-12">
+  <!-- 모바일: 16px, 태블릿: 32px, 데스크탑: 48px -->
+</div>
+```
+
+---
+
+## 🎯 Border Radius
+
+```css
+--radius-sm: 0.375rem  /* 6px - 작은 요소 */
+--radius-md: 0.5rem    /* 8px - 기본 */
+--radius-lg: 0.625rem  /* 10px - 카드, 버튼 */
+--radius-xl: 0.75rem   /* 12px - 모달 */
+--radius-2xl: 1rem     /* 16px - Hero 요소 */
+--radius-full: 9999px  /* 완전한 원형 */
+```
+
+**사용 예시**:
+- Button: `rounded-lg` (10px)
+- Card: `rounded-lg` (10px)
+- Modal: `rounded-xl` (12px)
+- Avatar: `rounded-full`
+
+---
+
+## 🎭 Shadow System
+
+```css
+--shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+--shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+--shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+--shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+--shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+```
+
+**사용 예시**:
+- Card: `shadow-md`
+- Modal: `shadow-xl`
+- Dropdown: `shadow-lg`
+- Button hover: `shadow-lg`
+
+---
+
+## ⚡ Animation & Transition
+
+### Duration
+
+```css
+--duration-fast: 150ms    /* 마이크로 인터랙션 */
+--duration-base: 200ms    /* 기본 전환 */
+--duration-slow: 300ms    /* 부드러운 전환 */
+--duration-slower: 500ms  /* 페이지 전환 */
+```
+
+### Easing
+
+```css
+--ease-in: cubic-bezier(0.4, 0, 1, 1);
+--ease-out: cubic-bezier(0, 0, 0.2, 1);
+--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+```
+
+**사용 예시**:
+```css
+.button {
+  transition: background-color var(--duration-base) var(--ease-out);
+}
+```
+
+---
+
+## 🔘 Component Guidelines
+
+### Button Variants
+
+**Primary**
+```tsx
+<button className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-200">
+  시작하기
+</button>
+```
+
+**Secondary**
+```tsx
+<button className="bg-brand-100 hover:bg-brand-200 text-brand-900 px-6 py-3 rounded-lg font-semibold transition-colors duration-200">
+  자세히 보기
+</button>
+```
+
+**Ghost**
+```tsx
+<button className="hover:bg-brand-50 text-brand-700 px-4 py-2 rounded-lg transition-colors duration-200">
+  건너뛰기
+</button>
+```
+
+---
+
+### Input Fields
+
+```tsx
+<input 
+  type="text" 
+  className="w-full px-4 py-3 bg-neutral-100 border border-neutral-200 rounded-lg focus:ring-2 focus:ring-accent-400 focus:border-transparent transition-all duration-200"
+  placeholder="이름을 입력하세요"
+/>
+```
+
+---
+
+### Cards
+
+```tsx
+<div className="bg-white p-6 rounded-lg shadow-md border border-neutral-200 hover:shadow-lg transition-shadow duration-200">
+  {/* Card Content */}
+</div>
+```
+
+---
+
+## 🎨 AI 이미지 스타일 가이드
+
+### 배경 처리
+- 원본 배경 100% 유지
+- 조명 자동 조절
+- 자연스러운 그림자 생성
+
+### 인물 처리
+- 아이폰 촬영 톤 모방
+- 피부톤 자연감 우선
+- 표정은 이모지 기반 선택
+- 최대 5명까지 생성 가능
+
+### 프롬프트 키워드
+```
+natural lighting, iPhone photography style, realistic skin tone, 
+candid moment, soft shadows, authentic atmosphere
+```
+
+---
+
+## 📋 Accessibility
+
+### Focus States
+- 모든 인터랙티브 요소에 `focus:ring-2 focus:ring-accent-400` 적용
+- Tab navigation 완전 지원
+
+### Color Contrast
+- 텍스트 대비율 최소 4.5:1 (WCAG AA 기준)
+- 주 텍스트: `text-neutral-900` on `bg-white`
+- 보조 텍스트: `text-neutral-500` on `bg-white`
+
+### Screen Reader
+- 중요 이미지에 `alt` 속성 필수
+- Interactive 요소에 `aria-label` 제공
+- Form 입력 필드에 `<label>` 연결
+
+---
+
+## 🚀 Usage in Code
+
+### Tailwind Class Example
+
+```tsx
+// Primary Button
+<button className="bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+  생성하기
+</button>
+
+// Card with hover effect
+<div className="bg-white rounded-lg p-6 shadow-md hover:shadow-xl transition-shadow duration-300 border border-neutral-200">
+  <h3 className="text-2xl font-bold text-neutral-900 mb-2">제목</h3>
+  <p className="text-neutral-500">설명 텍스트</p>
+</div>
+
+// Typography
+<h1 className="text-4xl font-bold text-neutral-900 leading-tight">
+  LateProof
+</h1>
+<p className="text-lg text-neutral-700 leading-relaxed">
+  즉석 인증샷 생성 서비스
+</p>
+```
+
+---
+
+## ✅ Acceptance Criteria Checklist
+
+- [x] SG.md 파일 생성 완료
+- [x] Tailwind config에 커스텀 토큰 반영 (@theme 블록)
+- [x] 색상 변수 정의 완료 (Brand Purple, Neutral, Accent, Semantic)
+- [x] 폰트 시스템 정의 완료 (Font Family, Size, Weight, Line Height)
+- [x] 간격 시스템 정의 완료 (8px 기반 Spacing)
+- [x] Button 컴포넌트에 스타일 적용 (브랜드 Purple 색상)
+- [ ] Storybook에서 스타일 검증 (다음 Task: M1-E3-T05)
+
+---
+
+## 📚 References
+
+- [Tailwind CSS v4 Documentation](https://tailwindcss.com)
+- [Shadcn/UI](https://ui.shadcn.com)
+- [OKLCH Color Space](https://oklch.com)
+- [WCAG Accessibility Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+
+
+
+<!-- Source: .ruler/TASKS.md -->
+
+# LateProof — Tasks
+
+아래 Task들은 Milestone → Epic → Task 순의 구조를 가지며,  
+모든 Task는 체크박스로 추적 가능합니다.
+
+ID 규칙:  
+`M{Milestone}-E{Epic}-T{TaskNumber}`  
+예: M2-E3-T04
+
+---
+
+# Milestone 1 — Foundation Setup
+
+## Epic 1.1 — Repository & Environment
+- [x] M1-E1-T01: GitHub Repository 생성
+- [x] M1-E1-T02: README 초기 템플릿 작성
+- [x] M1-E1-T03: Biome 초기 설정
+- [x] M1-E1-T03-1: Lefthook Git Hooks 설정
+- [x] M1-E1-T04: Vercel 프로젝트 생성
+- [x] M1-E1-T05: 환경 변수 구조 설계
+
+## Epic 1.2 — Next.js + FSD 구조
+- [x] M1-E2-T01: Next.js App Router 초기화
+- [x] M1-E2-T02: src/ 디렉토리 구조 생성
+- [x] M1-E2-T03: FSD Layer 구축(app/features/entities/shared)
+
+## Epic 1.3 — UI Design System & Storybook
+- [x] M1-E3-T01: TailwindCSS 설치
+- [x] M1-E3-T02: Shadcn 초기화
+- [x] M1-E3-T03: 기본 UI 컴포넌트 작성(Button/Input/Modal 등) — Button만 완료
+- [x] M1-E3-T04: SG.md 기반 스타일 시스템 구축
+- [x] M1-E3-T05: Storybook 설치
+
+## Epic 1.4 — Testing Environment Setup
+- [x] M1-E4-T01: Vitest 설치 및 설정
+- [x] M1-E4-T02: Testing Library 설치 및 setup 파일 작성
+- [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
+- [x] M1-E4-T04: Playwright 설치 및 설정
+- [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+
+---
+
+# Milestone 2 — Photo Mode Core Flow
+
+## Epic 2.1 — FSM 구축
+- [x] M2-E1-T01: Step Enum 정의
+- [x] M2-E1-T02: Transition Table 정의
+- [x] M2-E1-T03: Zustand FSM Store 구축
+
+## Epic 2.2 — SELECT_MODE Step
+- [x] M2-E2-T01: Photo/Map 선택 UI + UI 테스트/스토리(ModeCard/SelectModeView)
+- [x] M2-E2-T02: Step 이동 처리 + Page 테스트/스토리(SelectModePage)
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) + StepHeader 스토리 추가
+
+## Epic 2.3 — UPLOAD Step
+- [x] M2-E3-T01: 이미지 업로드(Dropzone) + UI/로직 분리 + 업로드 성공 콜백 주입(스텝 전환 분리) + Biome complexity 대응 + UI/Page 테스트/스토리
+- [ ] M2-E3-T02: orientation fix
+- [ ] M2-E3-T03: 확대/이동 기능
+- [ ] M2-E3-T04: 편집된 좌표 데이터 생성
+
+## Epic 2.4 — MATCH Step
+- [ ] M2-E4-T01: 인물 원 5개까지 생성 기능
+- [ ] M2-E4-T02: 원 색상 선택
+- [ ] M2-E4-T03: 표정 선택 UI
+- [ ] M2-E4-T04: 좌표 Payload Builder
+
+## Epic 2.5 — 얼굴 검증
+- [ ] M2-E5-T01: Azure Face API Wrapper 작성
+- [ ] M2-E5-T02: WARN → FAIL 처리
+- [ ] M2-E5-T03: FAIL 시 Step 롤백
+- [ ] M2-E5-T04: PASS 시 PAYMENT 이동
+
+## Epic 2.6 — PAYMENT Step
+- [ ] M2-E6-T01: Toss Payments SDK 연동
+- [ ] M2-E6-T02: 결제 성공 처리
+- [ ] M2-E6-T03: 결제 실패 처리
+
+## Epic 2.7 — GENERATE Step
+- [ ] M2-E7-T01: Nanobanana Payload Builder
+- [ ] M2-E7-T02: 3장 생성 요청
+- [ ] M2-E7-T03: 실패 시 1장 재생성 기능
+
+## Epic 2.8 — RESULT Step
+- [ ] M2-E8-T01: 3장 썸네일 렌더링
+- [ ] M2-E8-T02: 이미지 확대 보기
+- [ ] M2-E8-T03: 다운로드 기능
+- [ ] M2-E8-T04: 단일 재생성 버튼 처리
+
+---
+
+# Milestone 3 — Map Mode Core Flow
+
+## Epic 3.1 — 지도 UI
+- [ ] M3-E1-T01: Google Maps JS SDK 로딩
+- [ ] M3-E1-T02: 장소 검색 UI(SearchBox)
+- [ ] M3-E1-T03: 좌표 기반 Reverse Geocoding
+- [ ] M3-E1-T04: 장소 선택 UI
+
+## Epic 3.2 — 프롬프트 생성
+- [ ] M3-E2-T01: 장소 정보 파서
+- [ ] M3-E2-T02: Nanobanana Prompt Builder
+
+## Epic 3.3 — Flow 통합
+- [ ] M3-E3-T01: Map Mode Step Flow 구성
+- [ ] M3-E3-T02: MATCH → 검증 → 결제 → 생성 연결
+
+---
+
+# Milestone 4 — AI Generation
+
+## Epic 4.1 — Nanobanana Integration
+- [ ] M4-E1-T01: 이미지 생성 서버액션
+- [ ] M4-E1-T02: Mock 응답 모델 구성
+- [ ] M4-E1-T03: Payload 검증
+- [ ] M4-E1-T04: 재생성 기능 분리
+
+## Epic 4.2 — 이미지 취급
+- [ ] M4-E2-T01: 업로드 이미지 메모리 처리
+- [ ] M4-E2-T02: 생성 후 메모리 삭제
+
+---
+
+# Milestone 5 — Testing System
+
+## Epic 5.1 — Unit Test
+- [ ] M5-E1-T01: FSM Unit Test
+- [ ] M5-E1-T02: 얼굴 검증 로직 Test
+- [ ] M5-E1-T03: Payload builder Test
+- [ ] M5-E1-T04: Orientation fix Test
+- [ ] M5-E1-T05: 장소 프롬프트 Test
+
+## Epic 5.2 — Integration Test (MSW)
+- [ ] M5-E2-T01: 업로드→검증 PASS Test
+- [ ] M5-E2-T02: 검증 FAIL 롤백 Test
+- [ ] M5-E2-T03: 결제 흐름 Test
+- [ ] M5-E2-T04: 생성 3장 처리 Test
+- [ ] M5-E2-T05: 재생성 Test
+
+## Epic 5.3 — E2E (Playwright)
+- [ ] M5-E3-T01: Photo Mode Happy Path
+- [ ] M5-E3-T02: Map Mode Happy Path
+
+---
+
+# Milestone 6 — QA / Sentry / Deployment
+
+## Epic 6.1 — QA & UX
+- [ ] M6-E1-T01: 에러 처리 Toast
+- [ ] M6-E1-T02: Step 실패 UX 점검
+- [ ] M6-E1-T03: 생성 실패 재시도 UX
+- [ ] M6-E1-T04: 브랜드 톤 검수
+
+## Epic 6.2 — Monitoring
+- [ ] M6-E2-T01: Sentry FE 설치
+- [ ] M6-E2-T02: Sentry Server Actions 설치
+
+## Epic 6.3 — Deployment
+- [ ] M6-E3-T01: Vercel 환경변수 설정
+- [ ] M6-E3-T02: Custom Domain 연결
+- [ ] M6-E3-T03: Production 배포
