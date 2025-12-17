@@ -2,12 +2,14 @@ export type {
   ExpressionEmoji,
   MarkerTransform,
   MatchStepDataForAI,
+  NanobananaPromptResult,
   Person,
   PersonColor as PersonColorType,
   PersonForAI,
   PersonState
 } from './model';
 export {
+  buildNanobananaPrompt,
   EXPRESSION_PRESETS,
   exportMatchStepDataForAI,
   formatMatchStepDataAsPrompt,

@@ -3,6 +3,7 @@ import { userEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Person } from '@/entities/person';
 import { PersonColor, usePersonStore } from '@/entities/person';
+import { usePhotoStore } from '@/entities/photo';
 import { Step, useStepStore } from '@/entities/step';
 import { ExpressionSelectView } from './expression-select-view';
 
@@ -44,6 +45,7 @@ function createPerson(id: string, overrides: Partial<Person> = {}): Person {
 
 beforeEach(() => {
   usePersonStore.getState().reset();
+  usePhotoStore.getState().clear();
   useStepStore.getState().reset();
 });
 
@@ -119,6 +121,7 @@ describe('ExpressionSelectView', () => {
   it('다음 버튼 클릭 시 nextStep을 호출한다', async () => {
     const user = userEvent.setup();
     const nextStep = vi.fn();
+    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     usePersonStore.setState({
       initialized: true,
       activePersonId: null,
@@ -129,7 +132,9 @@ describe('ExpressionSelectView', () => {
     render(<ExpressionSelectView />);
 
     await user.click(screen.getByRole('button', { name: '결제하기' }));
+    expect(logSpy).toHaveBeenCalled();
     expect(nextStep).toHaveBeenCalledWith(Step.PAYMENT, 'EXPRESSION 완료');
+    logSpy.mockRestore();
   });
 
   it('인물 버튼에 선택된 표정 이모티콘이 배지로 표시된다', () => {

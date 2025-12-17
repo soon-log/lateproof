@@ -69,7 +69,7 @@ ID 규칙:
 - [x] M2-E5-T01: EXPRESSION Step 추가 (FSM 전이 규칙 업데이트)
 - [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI
 - [x] M2-E5-T03: 인물별 표정 선택 UI 구현 (emoji-picker-react 사용)
-- [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
+- [x] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
 ## Epic 2.6 — 얼굴 검증 (MATCH Step 통합)
 - [x] M2-E6-T01: Azure Face API Wrapper 작성

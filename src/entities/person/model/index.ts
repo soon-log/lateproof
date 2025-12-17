@@ -1,4 +1,6 @@
 export { exportMatchStepDataForAI, formatMatchStepDataAsPrompt } from './export-for-ai';
+export type { NanobananaPromptResult } from './nanobanana-prompt';
+export { buildNanobananaPrompt } from './nanobanana-prompt';
 export {
   selectActivePerson,
   selectActivePersonId,

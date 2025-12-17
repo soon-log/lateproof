@@ -2,7 +2,7 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-18 (EXPRESSION Step 표정 선택 UI 구현)
+> **Last Updated**: 2025-12-18 (Nanobanana 프롬프트 빌더 구현)
 
 ---
 
@@ -10,10 +10,14 @@
 - 추가: `emoji-picker-react` 패키지 — 이모티콘 선택 UI
 - 변경: `src/entities/person/model/types.ts` — `ExpressionEmoji` 타입을 string으로 확장, `EXPRESSION_PRESETS` 추가
 - 변경: `src/entities/person/model/store.ts` — `setExpression`, `clearExpression` 액션 추가
+- 추가: `src/entities/person/model/nanobanana-prompt.ts` — Nanobanana 최종 프롬프트/디버그 요약 생성 유틸
+- 추가: `src/entities/person/model/nanobanana-prompt.test.ts` — 프롬프트 빌더 유닛 테스트
 - 추가: `src/features/expression-select/ui/expression-person-button.tsx` — 인물 선택 버튼 컴포넌트
 - 추가: `src/features/expression-select/ui/expression-grid.tsx` — emoji-picker-react 기반 표정 선택 UI
-- 변경: `src/features/expression-select/ui/expression-select-view.tsx` — 상단 인물 버튼 + 하단 표정 선택 UI 통합
+- 변경: `src/features/expression-select/ui/expression-select-view.tsx` — 결제하기 클릭 시 프롬프트 콘솔 출력 + Step 이동
+- 변경: `src/features/expression-select/ui/expression-select-view.test.tsx` — 결제하기 클릭 시 콘솔 출력 스파이 추가
 - 추가: 각 컴포넌트별 테스트 및 스토리 파일
+- 변경: `prompt/nanobanana.md` — 베이스 이미지 보존(크롭/리사이즈/인물 삭제 금지) + 프레임/라운드 코너/face swap 억제 규칙 강화
 
 ---
 
@@ -113,6 +117,8 @@ lateproof/
 │   │   │   │   ├── types.ts      # PersonColor, MarkerTransform, Person, PersonState
 │   │   │   │   ├── export-for-ai.ts   # MATCH Step AI 전달용 변환 유틸
 │   │   │   │   ├── export-for-ai.test.ts
+│   │   │   │   ├── nanobanana-prompt.ts   # Nanobanana 최종 프롬프트 생성 유틸
+│   │   │   │   ├── nanobanana-prompt.test.ts
 │   │   │   │   ├── store.ts      # Person Store (Zustand) - 최대 5명, 초기화/재초기화
 │   │   │   │   ├── store.test.ts
 │   │   │   │   └── index.ts      # model Public API

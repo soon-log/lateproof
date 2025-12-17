@@ -21,7 +21,8 @@ import { Sparkles } from 'lucide-react';
 import type { JSX } from 'react';
 import { useCallback, useState } from 'react';
 import type { ExpressionEmoji } from '@/entities/person';
-import { selectPersons, usePersonStore } from '@/entities/person';
+import { buildNanobananaPrompt, selectPersons, usePersonStore } from '@/entities/person';
+import { selectPhotoFile, usePhotoStore } from '@/entities/photo';
 import { Step } from '@/entities/step/model/step';
 import { useStepStore } from '@/entities/step/model/store';
 import { NextStepButton } from '@/shared/components/ui';
@@ -33,6 +34,7 @@ export function ExpressionSelectView() {
   const setExpression = usePersonStore((s) => s.setExpression);
   const clearExpression = usePersonStore((s) => s.clearExpression);
   const nextStep = useStepStore((s) => s.nextStep);
+  const baseImageFile = usePhotoStore(selectPhotoFile);
 
   // 현재 선택된 인물 ID (EXPRESSION Step 내부 상태)
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
@@ -76,8 +78,10 @@ export function ExpressionSelectView() {
 
   // 다음 Step으로 이동
   const handleNext = useCallback(() => {
+    const { consoleOutput } = buildNanobananaPrompt({ persons, baseImageFile });
+    console.log(consoleOutput);
     nextStep(Step.PAYMENT, 'EXPRESSION 완료');
-  }, [nextStep]);
+  }, [baseImageFile, nextStep, persons]);
 
   return (
     <div className="flex flex-col gap-6">
