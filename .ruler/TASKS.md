@@ -71,10 +71,10 @@ ID 규칙:
 - [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
 ## Epic 2.6 — 얼굴 검증 (MATCH Step 통합)
-- [ ] M2-E6-T01: Azure Face API Wrapper 작성
-- [ ] M2-E6-T02: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
-- [ ] M2-E6-T03: 검증 실패 시 사용자 피드백 UI (WARN/FAIL 처리)
-- [ ] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용
+- [x] M2-E6-T01: Azure Face API Wrapper 작성
+- [x] M2-E6-T02: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
+- [x] M2-E6-T03: 검증 실패 시 사용자 피드백 UI (WARN/FAIL 처리)
+- [x] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용
 
 ## Epic 2.7 — PAYMENT Step
 - [ ] M2-E7-T01: Toss Payments SDK 연동
@@ -130,7 +130,7 @@ ID 규칙:
 
 ## Epic 5.1 — Unit Test
 - [ ] M5-E1-T01: FSM Unit Test
-- [ ] M5-E1-T02: 얼굴 검증 로직 Test
+- [x] M5-E1-T02: 얼굴 검증 로직 Test
 - [ ] M5-E1-T03: Payload builder Test
 - [ ] M5-E1-T04: Orientation fix Test
 - [ ] M5-E1-T05: 장소 프롬프트 Test

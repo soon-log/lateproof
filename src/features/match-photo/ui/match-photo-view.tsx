@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo } from 'react';
+import { toast } from 'sonner';
 import {
   type MarkerTransform,
   selectActivePersonId,
@@ -14,6 +15,7 @@ import { selectPhotoFile, usePhotoStore } from '@/entities/photo/model/store';
 import { Step } from '@/entities/step/model/step';
 import { useStepStore } from '@/entities/step/model/store';
 import { NextStepButton } from '@/shared/components/ui';
+import { validateFacePhoto } from '../model/validate-face-photo';
 import { ImageCanvas } from './image-canvas';
 import { PersonListPanel } from './person-list-panel';
 
@@ -130,7 +132,18 @@ export function MatchPhotoView() {
   // 패널에서 업로드 핸들러
   const handlePanelUploadPhoto = useCallback(
     (id: string, file: File) => {
-      setFacePhoto(id, file);
+      void (async () => {
+        const result = await validateFacePhoto(file);
+
+        if (!result.success) {
+          toast.error(
+            result.alertMessage ?? '얼굴을 인식할 수 없습니다. 다른 사진을 업로드해주세요.'
+          );
+          return;
+        }
+
+        setFacePhoto(id, file);
+      })();
     },
     [setFacePhoto]
   );

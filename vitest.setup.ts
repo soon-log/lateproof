@@ -46,7 +46,7 @@ if (!('releasePointerCapture' in HTMLElement.prototype)) {
 
 // MSW Server Setup
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'warn' });
+  server.listen({ onUnhandledRequest: 'error' });
 });
 
 afterEach(() => {

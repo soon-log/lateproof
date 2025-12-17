@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw';
+import { azureFaceHandlers } from './azure-face';
 
 /**
  * MSW 요청 핸들러 배열
@@ -7,18 +8,7 @@ import { HttpResponse, http } from 'msw';
  * @see https://mswjs.io/docs/api/http
  */
 export const handlers = [
-  // Azure Face API Mock
-  http.post('https://api.cognitive.microsoft.com/face/v1.0/detect', async () => {
-    return HttpResponse.json([
-      {
-        faceId: 'mock-face-id-1',
-        faceRectangle: { top: 100, left: 100, width: 150, height: 150 },
-        faceAttributes: {
-          qualityForRecognition: 'high'
-        }
-      }
-    ]);
-  }),
+  ...azureFaceHandlers,
 
   // Nanobanana API Mock
   http.post('https://api.nanobanana.com/generate', async () => {

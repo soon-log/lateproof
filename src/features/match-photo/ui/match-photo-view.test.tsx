@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Person } from '@/entities/person';
@@ -6,6 +6,25 @@ import { PersonColor, usePersonStore } from '@/entities/person';
 import { usePhotoStore } from '@/entities/photo/model/store';
 import { Step, useStepStore } from '@/entities/step';
 import { MatchPhotoView } from './match-photo-view';
+
+const { validateFacePhotoMock, toastErrorMock } = vi.hoisted(() => ({
+  validateFacePhotoMock: vi.fn(),
+  toastErrorMock: vi.fn()
+}));
+
+vi.mock('../model/validate-face-photo', () => ({
+  validateFacePhoto: validateFacePhotoMock
+}));
+
+vi.mock('sonner', () => ({
+  Toaster: () => null,
+  toast: {
+    error: toastErrorMock,
+    success: vi.fn(),
+    loading: vi.fn(),
+    promise: vi.fn()
+  }
+}));
 
 function createPerson(id: string, overrides: Partial<Person> = {}): Person {
   return {
@@ -30,6 +49,8 @@ beforeEach(() => {
   usePhotoStore.getState().clear();
   usePersonStore.getState().reset();
   useStepStore.getState().reset();
+  validateFacePhotoMock.mockReset();
+  toastErrorMock.mockReset();
 
   // JSDOM 환경에서 URL.createObjectURL이 없을 수 있어 안전하게 스텁
   if (!('createObjectURL' in URL)) {
@@ -85,5 +106,42 @@ describe('MatchPhotoView', () => {
 
     await user.click(button);
     expect(nextStep).toHaveBeenCalledWith(Step.EXPRESSION, 'MATCH 완료');
+  });
+
+  it('검증 실패 시 toast.error를 표시하고 얼굴 사진을 저장하지 않는다', async () => {
+    const user = userEvent.setup();
+    validateFacePhotoMock.mockResolvedValue({
+      success: false,
+      hasFace: false,
+      alertMessage: '테스트 오류 메시지'
+    });
+
+    usePhotoStore.getState().setFile(new File(['x'], 'base.png', { type: 'image/png' }));
+    usePersonStore.setState({
+      initialized: true,
+      activePersonId: 'p1',
+      persons: [createPerson('p1')]
+    });
+
+    const setFacePhotoSpy = vi.spyOn(usePersonStore.getState(), 'setFacePhoto');
+
+    render(<MatchPhotoView />);
+
+    const uploadButtons = screen.getAllByRole('button', { name: '사진 업로드' });
+    await user.click(uploadButtons[0]!);
+
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement | null;
+    expect(fileInput).not.toBeNull();
+
+    await user.upload(
+      fileInput as HTMLInputElement,
+      new File(['x'], 'face.jpg', { type: 'image/jpeg' })
+    );
+
+    await waitFor(() => {
+      expect(toastErrorMock).toHaveBeenCalledWith('테스트 오류 메시지');
+    });
+
+    expect(setFacePhotoSpy).not.toHaveBeenCalled();
   });
 });

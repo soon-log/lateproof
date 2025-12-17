@@ -2,11 +2,24 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-17 (MATCH 인물 추가 기본 배치 개선, 얼굴 이미지 크기 조절 상태 추가)
+> **Last Updated**: 2025-12-17 (Azure Face 검증 실패 토스트(Shadcn/Sonner) 적용)
 
 ---
 
 ## 2025-12-17 업데이트
+- 변경: `app/layout.tsx` — Sonner `Toaster` 추가(전역 토스트 렌더링)
+- 변경: `src/features/match-photo/ui/match-photo-view.tsx` — 검증 실패 메시지 `window.alert` → `toast.error`
+- 변경: `package.json` — `sonner` 의존성 추가
+- 변경: `src/features/match-photo/ui/match-photo-view.test.tsx` — 검증 실패 시 토스트 호출 테스트 추가
+- 추가: `app/api/face/validate/route.test.ts` — MSW로 Azure Face 호출을 모킹하여 Route Handler를 단위 테스트
+- 추가: `mocks/handlers/azure-face.ts` — Azure Face `/face/v1.0/detect` 모킹(요청 바디로 케이스 분기)
+- 변경: `mocks/handlers/index.ts` — Azure Face 핸들러를 wildcard 기반으로 교체
+- 변경: `vitest.setup.ts` — unhandled 외부 요청을 `error`로 처리(외부 API 실호출 방지)
+- 추가: `app/api/face/validate/route.ts` — Azure Face API(/face/v1.0/detect) 프록시 + 얼굴/저해상도 검증
+- 추가: `src/features/match-photo/model/validate-face-photo.ts` — 프론트에서 검증 API 호출(FormData)
+- 추가: `src/features/match-photo/model/validate-face-photo.test.ts` — 검증 API 호출 유틸 유닛 테스트
+- 변경: `src/features/match-photo/ui/match-photo-view.tsx` — 업로드/교체 시 검증 성공 시에만 얼굴 사진 저장
+- 변경: `.env.example` — `AZURE_FACE_ENDPOINT`, `AZURE_FACE_KEY` 추가
 - 변경: `src/entities/person/model/types.ts` — `MarkerTransform.imageScale`(얼굴 이미지 크기) 추가, `PersonForAI.faceImageScale` 반영
 - 변경: `src/entities/person/model/store.ts` — 인물 추가 시 Active 마커 기준으로 "반쯤 겹치게" 우측 스택 배치
 - 변경: `src/features/match-photo/ui/person-marker.tsx` — 마커 내부 얼굴 이미지 +/- 크기 조절 컨트롤 추가
@@ -35,6 +48,10 @@ lateproof/
 ├── app/                      # Next.js App Router (루트 레이아웃, 페이지)
 │   ├── app/                  # "/app" 메인 애플리케이션 라우트
 │   │   └── page.tsx          # StepRouter 렌더링
+│   ├── api/                  # Next.js Route Handlers (서버 전용 API)
+│   │   └── face/
+│   │       └── validate/
+│   │           └── route.ts   # Azure Face 기반 얼굴 검증 API
 │   ├── globals.css           # 전역 스타일 (Tailwind CSS)
 │   ├── layout.tsx            # 루트 레이아웃
 │   └── page.tsx              # "/" 루트 페이지 (랜딩페이지 예정, 현재 /app 리다이렉트)
@@ -45,6 +62,7 @@ lateproof/
 │
 ├── mocks/                    # MSW (Mock Service Worker)
 │   ├── handlers/             # API Mock 핸들러
+│   │   ├── azure-face.ts     # Azure Face API 핸들러
 │   │   └── index.ts          # 핸들러 정의
 │   ├── browser.ts            # 브라우저 환경 MSW 설정
 │   ├── node.ts               # Node 환경 MSW 설정
@@ -104,6 +122,9 @@ lateproof/
 │   │   │   │   └── upload-photo-view.tsx
 │   │   │   └── index.ts
 │   │   ├── match-photo/      # 인물 마커 배치 기능 (Epic 2.4)
+│   │   │   ├── model/
+│   │   │   │   ├── validate-face-photo.ts
+│   │   │   │   └── validate-face-photo.test.ts
 │   │   │   ├── ui/
 │   │   │   │   ├── person-marker.tsx      # 이미지 위 마커 컴포넌트
 │   │   │   │   ├── person-marker.test.tsx
