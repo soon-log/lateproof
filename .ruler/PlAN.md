@@ -2,15 +2,15 @@
 
 > **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
 > **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
-> **Last Updated**: 2025-12-17 (Azure Face 검증 실패 토스트(Shadcn/Sonner) 적용)
+> **Last Updated**: 2025-12-18 (TypeScript 타입 에러 수정 + `pnpm tsc` 타입 검사 규칙 추가)
 
 ---
 
 ## 📊 Current Status
 
 **현재 Phase**: `M2 — Photo Mode Core Flow`  
-**전체 진행률**: `26.1%` (42/161 tasks)  
-**현재 작업 중**: M2-E5-T03 (표정 선택 UI)  
+**전체 진행률**: `26.7%` (43/161 tasks)  
+**현재 작업 중**: M2-E5-T04 (표정 데이터 AI 전달용 포맷)  
 **차단 요소**: 없음
 
 ---
@@ -32,9 +32,8 @@
 
 ### 다음 작업 (우선순위 순)
 
-1. **M2-E5-T03**: 인물별 표정 선택 UI 구현
-2. **M2-E5-T04**: 표정 데이터 저장 및 AI 전달용 포맷
-3. **M2-E7-T01**: Toss Payments SDK 연동
+1. **M2-E5-T04**: 표정 데이터 저장 및 AI 전달용 포맷
+2. **M2-E7-T01**: Toss Payments SDK 연동
 
 ---
 
@@ -68,6 +67,7 @@
 - [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성 (src/mocks 완료)
 - [x] M1-E4-T04: Playwright 설치 및 설정 (playwright.config.ts, e2e/ 완료)
 - [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+- [x] M1-E4-T06: 기능 추가/수정 후 TypeScript 타입 검사(`pnpm tsc`) 수행 규칙 문서화
 
 ### Milestone 2 — Photo Mode Core Flow
 
@@ -93,10 +93,10 @@
 - [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 (src/entities/person/model/export-for-ai.ts)
 - [x] M2-E4-T07: MATCH Step 컴포넌트 테스트/스토리 작성
 
-#### Epic 2.5 — EXPRESSION Step 🚧 진행 중 (2/4 tasks)
+#### Epic 2.5 — EXPRESSION Step 🚧 진행 중 (3/4 tasks)
 - [x] M2-E5-T01: EXPRESSION Step FSM 전이 규칙 추가
 - [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI (src/features/expression-select/ui/expression-select-view.tsx)
-- [ ] M2-E5-T03: 인물별 표정 선택 UI 구현
+- [x] M2-E5-T03: 인물별 표정 선택 UI 구현 (emoji-picker-react 사용)
 - [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
 #### Epic 2.6 — 얼굴 검증 (MATCH Step 통합) ✅ 완료 (4/4 tasks)
@@ -106,9 +106,9 @@
 - [x] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용 (검증 성공 시에만 facePhoto 설정)
 
 ### 통계
-- **완료**: 42 tasks
+- **완료**: 43 tasks
 - **진행 중**: 1 tasks
-- **남은 작업**: 118 tasks
+- **남은 작업**: 117 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
@@ -119,7 +119,7 @@
 - **M2-E2**: ✅ 100% (3/3 tasks) — SELECT_MODE Step 완료
 - **M2-E3**: ✅ 100% (1/1 tasks) — UPLOAD Step 완료
 - **M2-E4**: ✅ 100% (7/7 tasks) — MATCH Step 완료
-- **M2-E5**: 🚧 50% (2/4 tasks) — EXPRESSION Step 진행 중
+- **M2-E5**: 🚧 75% (3/4 tasks) — EXPRESSION Step 진행 중
 - **M2-E6**: ✅ 100% (4/4 tasks) — 얼굴 검증 완료
 
 

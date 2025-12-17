@@ -37,6 +37,7 @@ ID 규칙:
 - [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
 - [x] M1-E4-T04: Playwright 설치 및 설정
 - [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+- [x] M1-E4-T06: 기능 추가/수정 후 TypeScript 타입 검사(`pnpm tsc`) 수행 규칙 문서화
 
 ---
 
@@ -67,7 +68,7 @@ ID 규칙:
 ## Epic 2.5 — EXPRESSION Step (신규)
 - [x] M2-E5-T01: EXPRESSION Step 추가 (FSM 전이 규칙 업데이트)
 - [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI
-- [ ] M2-E5-T03: 인물별 표정 선택 UI 구현
+- [x] M2-E5-T03: 인물별 표정 선택 UI 구현 (emoji-picker-react 사용)
 - [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
 ## Epic 2.6 — 얼굴 검증 (MATCH Step 통합)

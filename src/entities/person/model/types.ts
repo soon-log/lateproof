@@ -87,6 +87,29 @@ export interface MarkerTransform {
 }
 
 /**
+ * 표정 이모티콘 타입
+ * EXPRESSION Step에서 선택 가능한 표정
+ * emoji-picker-react를 사용하므로 모든 이모티콘 문자열 허용
+ */
+export type ExpressionEmoji = string;
+
+/**
+ * 빠른 선택용 표정 프리셋 (참고용)
+ */
+export const EXPRESSION_PRESETS = [
+  '😄', // 기쁨
+  '😢', // 슬픔
+  '😡', // 화남
+  '😮', // 놀람
+  '😐', // 무표정
+  '😴', // 졸림
+  '🥰', // 사랑
+  '😎', // 여유
+  '🤔', // 생각
+  '😏' // 음흉
+] as const;
+
+/**
  * 사람 데이터
  */
 export interface Person {
@@ -100,6 +123,8 @@ export interface Person {
   facePhotoUrl: string | null;
   /** 마커 변형 데이터 */
   transform: MarkerTransform;
+  /** 선택된 표정 이모티콘 (EXPRESSION Step에서 선택, optional) */
+  expression: ExpressionEmoji | null;
 }
 
 /**

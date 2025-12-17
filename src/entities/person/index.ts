@@ -1,4 +1,5 @@
 export type {
+  ExpressionEmoji,
   MarkerTransform,
   MatchStepDataForAI,
   Person,
@@ -7,6 +8,7 @@ export type {
   PersonState
 } from './model';
 export {
+  EXPRESSION_PRESETS,
   exportMatchStepDataForAI,
   formatMatchStepDataAsPrompt,
   PERSON_COLOR_ORDER,

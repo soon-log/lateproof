@@ -94,6 +94,7 @@ app → pages → widgets → features → entities → shared
 - 테스트 커버리지 80% 이상 준수
 - 파일당 코드의 줄 수는 500줄을 넘기지 않도록 권장
 - 코드(파일) 수정/추가 후 `pnpm check`를 실행하고, 문제가 발생하지 않을 때까지 수정·보완한다 (Biome 설정 수정 금지)
+- 기능 추가/수정 후 `pnpm tsc`를 실행하여 타입 검사를 수행하고, 타입 에러가 없을 때까지 수정·보완한다
 
 ## 테스트/스토리 강제 규칙 (⚠️ 필수 - 예외 없음)
 
@@ -157,6 +158,7 @@ export const WithPhoto: StoryObj<typeof PersonButton> = {};
 - [ ] 각 UI 컴포넌트에 대한 `*.test.tsx` 파일 작성 완료
 - [ ] 각 Hook/Store에 대한 `*.test.ts` 파일 작성 완료
 - [ ] `pnpm check` 실행하여 Biome 검사 통과 확인 (문제 발생 시 해결할 때까지 반복)
+- [ ] `pnpm tsc` 실행하여 TypeScript 타입 검사 통과 확인
 - [ ] `pnpm test` 실행하여 모든 테스트 통과 확인
 - [ ] 각 UI 컴포넌트에 대한 `*.stories.tsx` 파일 작성 완료
 - [ ] `pnpm storybook` 실행하여 모든 스토리 렌더링 확인
@@ -275,9 +277,39 @@ export type Status = typeof Status[keyof typeof Status];
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-17 (MATCH/EXPRESSION 테스트/스토리 추가, Person Store 테스트 보강)
+> **Last Updated**: 2025-12-18 (EXPRESSION Step 표정 선택 UI 구현)
 
 ---
+
+## 2025-12-18 업데이트
+- 추가: `emoji-picker-react` 패키지 — 이모티콘 선택 UI
+- 변경: `src/entities/person/model/types.ts` — `ExpressionEmoji` 타입을 string으로 확장, `EXPRESSION_PRESETS` 추가
+- 변경: `src/entities/person/model/store.ts` — `setExpression`, `clearExpression` 액션 추가
+- 추가: `src/features/expression-select/ui/expression-person-button.tsx` — 인물 선택 버튼 컴포넌트
+- 추가: `src/features/expression-select/ui/expression-grid.tsx` — emoji-picker-react 기반 표정 선택 UI
+- 변경: `src/features/expression-select/ui/expression-select-view.tsx` — 상단 인물 버튼 + 하단 표정 선택 UI 통합
+- 추가: 각 컴포넌트별 테스트 및 스토리 파일
+
+---
+
+## 2025-12-17 업데이트
+- 변경: `app/layout.tsx` — Sonner `Toaster` 추가(전역 토스트 렌더링)
+- 변경: `src/features/match-photo/ui/match-photo-view.tsx` — 검증 실패 메시지 `window.alert` → `toast.error`
+- 변경: `package.json` — `sonner` 의존성 추가
+- 변경: `src/features/match-photo/ui/match-photo-view.test.tsx` — 검증 실패 시 토스트 호출 테스트 추가
+- 추가: `app/api/face/validate/route.test.ts` — MSW로 Azure Face 호출을 모킹하여 Route Handler를 단위 테스트
+- 추가: `mocks/handlers/azure-face.ts` — Azure Face `/face/v1.0/detect` 모킹(요청 바디로 케이스 분기)
+- 변경: `mocks/handlers/index.ts` — Azure Face 핸들러를 wildcard 기반으로 교체
+- 변경: `vitest.setup.ts` — unhandled 외부 요청을 `error`로 처리(외부 API 실호출 방지)
+- 추가: `app/api/face/validate/route.ts` — Azure Face API(/face/v1.0/detect) 프록시 + 얼굴/저해상도 검증
+- 추가: `src/features/match-photo/model/validate-face-photo.ts` — 프론트에서 검증 API 호출(FormData)
+- 추가: `src/features/match-photo/model/validate-face-photo.test.ts` — 검증 API 호출 유틸 유닛 테스트
+- 변경: `src/features/match-photo/ui/match-photo-view.tsx` — 업로드/교체 시 검증 성공 시에만 얼굴 사진 저장
+- 변경: `.env.example` — `AZURE_FACE_ENDPOINT`, `AZURE_FACE_KEY` 추가
+- 변경: `src/entities/person/model/types.ts` — `MarkerTransform.imageScale`(얼굴 이미지 크기) 추가, `PersonForAI.faceImageScale` 반영
+- 변경: `src/entities/person/model/store.ts` — 인물 추가 시 Active 마커 기준으로 "반쯤 겹치게" 우측 스택 배치
+- 변경: `src/features/match-photo/ui/person-marker.tsx` — 마커 내부 얼굴 이미지 +/- 크기 조절 컨트롤 추가
+- 변경: `src/entities/person/model/export-for-ai.ts` — AI 전달 데이터에 얼굴 이미지 스케일 포함 및 프롬프트 출력 개선
 
 ## 📁 Project Structure
 
@@ -302,6 +334,10 @@ lateproof/
 ├── app/                      # Next.js App Router (루트 레이아웃, 페이지)
 │   ├── app/                  # "/app" 메인 애플리케이션 라우트
 │   │   └── page.tsx          # StepRouter 렌더링
+│   ├── api/                  # Next.js Route Handlers (서버 전용 API)
+│   │   └── face/
+│   │       └── validate/
+│   │           └── route.ts   # Azure Face 기반 얼굴 검증 API
 │   ├── globals.css           # 전역 스타일 (Tailwind CSS)
 │   ├── layout.tsx            # 루트 레이아웃
 │   └── page.tsx              # "/" 루트 페이지 (랜딩페이지 예정, 현재 /app 리다이렉트)
@@ -312,6 +348,7 @@ lateproof/
 │
 ├── mocks/                    # MSW (Mock Service Worker)
 │   ├── handlers/             # API Mock 핸들러
+│   │   ├── azure-face.ts     # Azure Face API 핸들러
 │   │   └── index.ts          # 핸들러 정의
 │   ├── browser.ts            # 브라우저 환경 MSW 설정
 │   ├── node.ts               # Node 환경 MSW 설정
@@ -371,6 +408,9 @@ lateproof/
 │   │   │   │   └── upload-photo-view.tsx
 │   │   │   └── index.ts
 │   │   ├── match-photo/      # 인물 마커 배치 기능 (Epic 2.4)
+│   │   │   ├── model/
+│   │   │   │   ├── validate-face-photo.ts
+│   │   │   │   └── validate-face-photo.test.ts
 │   │   │   ├── ui/
 │   │   │   │   ├── person-marker.tsx      # 이미지 위 마커 컴포넌트
 │   │   │   │   ├── person-marker.test.tsx
@@ -1119,15 +1159,15 @@ Layer → Segment (Slice 없음!)
 
 > **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
 > **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
-> **Last Updated**: 2025-12-17 (Biome lint 오류 해결, MATCH 마커 오프셋 조정 UX 복원)
+> **Last Updated**: 2025-12-18 (TypeScript 타입 에러 수정 + `pnpm tsc` 타입 검사 규칙 추가)
 
 ---
 
 ## 📊 Current Status
 
 **현재 Phase**: `M2 — Photo Mode Core Flow`  
-**전체 진행률**: `23.0%` (37/161 tasks)  
-**현재 작업 중**: M2-E5-T03 (표정 선택 UI)  
+**전체 진행률**: `26.7%` (43/161 tasks)  
+**현재 작업 중**: M2-E5-T04 (표정 데이터 AI 전달용 포맷)  
 **차단 요소**: 없음
 
 ---
@@ -1138,7 +1178,7 @@ Layer → Segment (Slice 없음!)
 
 - [x] M2-E4-T01: Person 마커 시스템 구현 ✅ 완료
 - [x] M2-E4-T02: 마커 스케일/회전 핸들 구현 ✅ 완료
-- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋 조정 ✅ 완료
+- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋/크기 조정 ✅ 완료
 - [x] M2-E4-T04: 인물 설정 패널 UI ✅ 완료
 - [x] M2-E4-T05: 뒤로가기 시 Person 상태 초기화 ✅ 완료
 - [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 ✅ 완료
@@ -1149,10 +1189,8 @@ Layer → Segment (Slice 없음!)
 
 ### 다음 작업 (우선순위 순)
 
-1. **M2-E6-T01**: Azure Face API Wrapper 작성
-2. **M2-E6-T02**: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
-3. **M2-E5-T03**: 인물별 표정 선택 UI 구현
-4. **M2-E5-T04**: 표정 데이터 저장 및 AI 전달용 포맷
+1. **M2-E5-T04**: 표정 데이터 저장 및 AI 전달용 포맷
+2. **M2-E7-T01**: Toss Payments SDK 연동
 
 ---
 
@@ -1186,6 +1224,7 @@ Layer → Segment (Slice 없음!)
 - [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성 (src/mocks 완료)
 - [x] M1-E4-T04: Playwright 설치 및 설정 (playwright.config.ts, e2e/ 완료)
 - [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+- [x] M1-E4-T06: 기능 추가/수정 후 TypeScript 타입 검사(`pnpm tsc`) 수행 규칙 문서화
 
 ### Milestone 2 — Photo Mode Core Flow
 
@@ -1203,24 +1242,30 @@ Layer → Segment (Slice 없음!)
 - [x] M2-E3-T01: 이미지 업로드(파일 선택) + 파일 상태 저장(entities/photo) + MATCH 이동 (src/entities/photo/model/store.ts, src/features/upload-photo/model/use-upload-photo-flow.ts)
 
 #### Epic 2.4 — MATCH Step ✅ 완료 (7/7 tasks)
-- [x] M2-E4-T01: Person 마커 시스템 구현 (src/entities/person/model/store.ts, src/features/match-photo/ui/person-marker.tsx)
+- [x] M2-E4-T01: Person 마커 시스템 구현 + 인물 추가 시 기본 스택 배치 (src/entities/person/model/store.ts, src/features/match-photo/ui/person-marker.tsx)
 - [x] M2-E4-T02: 마커 스케일/회전 핸들 구현 (Active 상태에서만 표시)
-- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋 조정 기능
+- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋/크기 조정 기능
 - [x] M2-E4-T04: 인물 설정 패널 UI (src/features/match-photo/ui/person-list-panel.tsx)
 - [x] M2-E4-T05: 뒤로가기 시 Person 상태 초기화 (StepHeader onBeforeBack prop)
 - [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 (src/entities/person/model/export-for-ai.ts)
 - [x] M2-E4-T07: MATCH Step 컴포넌트 테스트/스토리 작성
 
-#### Epic 2.5 — EXPRESSION Step 🚧 진행 중 (2/4 tasks)
+#### Epic 2.5 — EXPRESSION Step 🚧 진행 중 (3/4 tasks)
 - [x] M2-E5-T01: EXPRESSION Step FSM 전이 규칙 추가
 - [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI (src/features/expression-select/ui/expression-select-view.tsx)
-- [ ] M2-E5-T03: 인물별 표정 선택 UI 구현
+- [x] M2-E5-T03: 인물별 표정 선택 UI 구현 (emoji-picker-react 사용)
 - [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
+#### Epic 2.6 — 얼굴 검증 (MATCH Step 통합) ✅ 완료 (4/4 tasks)
+- [x] M2-E6-T01: Azure Face API Wrapper 작성 (app/api/face/validate/route.ts)
+- [x] M2-E6-T02: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합 (src/features/match-photo/ui/match-photo-view.tsx)
+- [x] M2-E6-T03: 검증 실패 시 사용자 피드백 UI (Shadcn/Sonner toast로 표시)
+- [x] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용 (검증 성공 시에만 facePhoto 설정)
+
 ### 통계
-- **완료**: 37 tasks
+- **완료**: 43 tasks
 - **진행 중**: 1 tasks
-- **남은 작업**: 123 tasks
+- **남은 작업**: 117 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
@@ -1231,7 +1276,8 @@ Layer → Segment (Slice 없음!)
 - **M2-E2**: ✅ 100% (3/3 tasks) — SELECT_MODE Step 완료
 - **M2-E3**: ✅ 100% (1/1 tasks) — UPLOAD Step 완료
 - **M2-E4**: ✅ 100% (7/7 tasks) — MATCH Step 완료
-- **M2-E5**: 🚧 50% (2/4 tasks) — EXPRESSION Step 진행 중
+- **M2-E5**: 🚧 75% (3/4 tasks) — EXPRESSION Step 진행 중
+- **M2-E6**: ✅ 100% (4/4 tasks) — 얼굴 검증 완료
 
 
 ---
@@ -1265,7 +1311,7 @@ Layer → Segment (Slice 없음!)
 - [x] StepRouter 구현 (Framer Motion 페이지 전환)
 - [x] Framer Motion 설치 및 애니메이션 적용
 - [x] UPLOAD Step 구현
-- [ ] Azure Face API 연동
+- [x] Azure Face API 연동
 - [ ] Toss Payments 연동
 - [ ] Nanobanana API 연동
 
@@ -2441,6 +2487,7 @@ ID 규칙:
 - [x] M1-E4-T03: MSW 설치 및 핸들러 구조 생성
 - [x] M1-E4-T04: Playwright 설치 및 설정
 - [x] M1-E4-T05: package.json 테스트 스크립트 추가 및 Lefthook 통합
+- [x] M1-E4-T06: 기능 추가/수정 후 TypeScript 타입 검사(`pnpm tsc`) 수행 규칙 문서화
 
 ---
 
@@ -2460,9 +2507,9 @@ ID 규칙:
 - [x] M2-E3-T01: 이미지 업로드(Dropzone) + 파일 상태 저장(entities/photo) + MATCH 이동 + UI/Page 테스트/스토리
 
 ## Epic 2.4 — MATCH Step
-- [x] M2-E4-T01: Person 마커 시스템 구현 (최대 5명, 색상 배정, 드래그 이동)
+- [x] M2-E4-T01: Person 마커 시스템 구현 (최대 5명, 색상 배정, 드래그 이동, 인물 추가 시 기본 스택 배치)
 - [x] M2-E4-T02: 마커 스케일/회전 핸들 구현 (Active 상태에서만 표시)
-- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋 조정 기능
+- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋/크기 조정 기능
 - [x] M2-E4-T04: 인물 설정 패널 UI (추가/삭제/초기화 버튼)
 - [x] M2-E4-T05: 뒤로가기 시 Person 상태 초기화
 - [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 (PersonForAI, MatchStepDataForAI)
@@ -2471,14 +2518,14 @@ ID 규칙:
 ## Epic 2.5 — EXPRESSION Step (신규)
 - [x] M2-E5-T01: EXPRESSION Step 추가 (FSM 전이 규칙 업데이트)
 - [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI
-- [ ] M2-E5-T03: 인물별 표정 선택 UI 구현
+- [x] M2-E5-T03: 인물별 표정 선택 UI 구현 (emoji-picker-react 사용)
 - [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
 ## Epic 2.6 — 얼굴 검증 (MATCH Step 통합)
-- [ ] M2-E6-T01: Azure Face API Wrapper 작성
-- [ ] M2-E6-T02: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
-- [ ] M2-E6-T03: 검증 실패 시 사용자 피드백 UI (WARN/FAIL 처리)
-- [ ] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용
+- [x] M2-E6-T01: Azure Face API Wrapper 작성
+- [x] M2-E6-T02: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
+- [x] M2-E6-T03: 검증 실패 시 사용자 피드백 UI (WARN/FAIL 처리)
+- [x] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용
 
 ## Epic 2.7 — PAYMENT Step
 - [ ] M2-E7-T01: Toss Payments SDK 연동
@@ -2534,7 +2581,7 @@ ID 규칙:
 
 ## Epic 5.1 — Unit Test
 - [ ] M5-E1-T01: FSM Unit Test
-- [ ] M5-E1-T02: 얼굴 검증 로직 Test
+- [x] M5-E1-T02: 얼굴 검증 로직 Test
 - [ ] M5-E1-T03: Payload builder Test
 - [ ] M5-E1-T04: Orientation fix Test
 - [ ] M5-E1-T05: 장소 프롬프트 Test

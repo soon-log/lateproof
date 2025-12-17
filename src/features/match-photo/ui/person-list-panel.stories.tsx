@@ -7,6 +7,7 @@ const ONE_BY_ONE_PNG =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR42mP8/5+hHgAHggJ/Pm1H4QAAAABJRU5ErkJggg==';
 
 function createPerson(id: string, color: PersonColor, overrides: Partial<Person> = {}): Person {
+  const { expression, ...rest } = overrides;
   return {
     id,
     color,
@@ -21,7 +22,8 @@ function createPerson(id: string, color: PersonColor, overrides: Partial<Person>
       imageOffsetX: 0,
       imageOffsetY: 0
     },
-    ...overrides
+    ...rest,
+    expression: expression ?? null
   };
 }
 

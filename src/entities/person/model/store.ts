@@ -13,6 +13,7 @@ import type {} from '@redux-devtools/extension';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import {
+  type ExpressionEmoji,
   type MarkerTransform,
   PERSON_COLOR_ORDER,
   type Person,
@@ -99,7 +100,8 @@ function createFirstPerson(transform: MarkerTransform): Person {
     color: getFirstPersonColor(),
     facePhoto: null,
     facePhotoUrl: null,
-    transform
+    transform,
+    expression: null
   };
 }
 
@@ -145,6 +147,12 @@ interface PersonActions {
 
   /** 마커 위치 업데이트 */
   updateTransform: (id: string, transform: Partial<MarkerTransform>) => void;
+
+  /** 표정 설정 */
+  setExpression: (id: string, expression: ExpressionEmoji) => void;
+
+  /** 표정 초기화 */
+  clearExpression: (id: string) => void;
 
   /** 전체 리셋 (워크플로우 처음부터 다시 시작 시) */
   reset: () => void;
@@ -229,7 +237,8 @@ function createAddPerson(set: SetPersonStore, get: GetPersonStore) {
       color: nextColor,
       facePhoto: null,
       facePhotoUrl: null,
-      transform: getDefaultTransformForNewPerson(baseTransform)
+      transform: getDefaultTransformForNewPerson(baseTransform),
+      expression: null
     };
 
     set({
@@ -300,6 +309,38 @@ function createUpdateTransform(set: SetPersonStore, get: GetPersonStore) {
   };
 }
 
+function createSetExpression(set: SetPersonStore, get: GetPersonStore) {
+  return (id: string, expression: ExpressionEmoji) => {
+    const { persons } = get();
+
+    const newPersons = persons.map((p) => {
+      if (p.id !== id) return p;
+      return {
+        ...p,
+        expression
+      };
+    });
+
+    set({ persons: newPersons });
+  };
+}
+
+function createClearExpression(set: SetPersonStore, get: GetPersonStore) {
+  return (id: string) => {
+    const { persons } = get();
+
+    const newPersons = persons.map((p) => {
+      if (p.id !== id) return p;
+      return {
+        ...p,
+        expression: null
+      };
+    });
+
+    set({ persons: newPersons });
+  };
+}
+
 function createReset(set: SetPersonStore, get: GetPersonStore) {
   return () => {
     const { persons } = get();
@@ -324,6 +365,8 @@ export const usePersonStore = create<PersonStore>()(
 
       setFacePhoto: createSetFacePhoto(set, get),
       updateTransform: createUpdateTransform(set, get),
+      setExpression: createSetExpression(set, get),
+      clearExpression: createClearExpression(set, get),
       reset: createReset(set, get)
     }),
     {

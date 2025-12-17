@@ -6,6 +6,7 @@ import { PersonColor } from '@/entities/person';
 import { PersonListPanel } from './person-list-panel';
 
 function createPerson(id: string, overrides: Partial<Person> = {}): Person {
+  const { expression, ...rest } = overrides;
   return {
     id,
     color: PersonColor.BLUE,
@@ -20,7 +21,8 @@ function createPerson(id: string, overrides: Partial<Person> = {}): Person {
       imageOffsetX: 0,
       imageOffsetY: 0
     },
-    ...overrides
+    ...rest,
+    expression: expression ?? null
   };
 }
 

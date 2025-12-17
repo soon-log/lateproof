@@ -40,7 +40,8 @@ describe('MatchPhotoPage', () => {
             imageScale: 1.5,
             imageOffsetX: 0,
             imageOffsetY: 0
-          }
+          },
+          expression: null
         }
       ]
     });

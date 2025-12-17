@@ -89,6 +89,7 @@ app → pages → widgets → features → entities → shared
 - 테스트 커버리지 80% 이상 준수
 - 파일당 코드의 줄 수는 500줄을 넘기지 않도록 권장
 - 코드(파일) 수정/추가 후 `pnpm check`를 실행하고, 문제가 발생하지 않을 때까지 수정·보완한다 (Biome 설정 수정 금지)
+- 기능 추가/수정 후 `pnpm tsc`를 실행하여 타입 검사를 수행하고, 타입 에러가 없을 때까지 수정·보완한다
 
 ## 테스트/스토리 강제 규칙 (⚠️ 필수 - 예외 없음)
 
@@ -152,6 +153,7 @@ export const WithPhoto: StoryObj<typeof PersonButton> = {};
 - [ ] 각 UI 컴포넌트에 대한 `*.test.tsx` 파일 작성 완료
 - [ ] 각 Hook/Store에 대한 `*.test.ts` 파일 작성 완료
 - [ ] `pnpm check` 실행하여 Biome 검사 통과 확인 (문제 발생 시 해결할 때까지 반복)
+- [ ] `pnpm tsc` 실행하여 TypeScript 타입 검사 통과 확인
 - [ ] `pnpm test` 실행하여 모든 테스트 통과 확인
 - [ ] 각 UI 컴포넌트에 대한 `*.stories.tsx` 파일 작성 완료
 - [ ] `pnpm storybook` 실행하여 모든 스토리 렌더링 확인

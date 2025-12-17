@@ -13,13 +13,15 @@ function createPerson(
   y: number,
   overrides: Partial<Person> = {}
 ): Person {
+  const { expression, ...rest } = overrides;
   return {
     id,
     color,
     facePhoto: null,
     facePhotoUrl: null,
     transform: { x, y, scale: 1, rotation: 0, imageScale: 1.5, imageOffsetX: 0, imageOffsetY: 0 },
-    ...overrides
+    ...rest,
+    expression: expression ?? null
   };
 }
 

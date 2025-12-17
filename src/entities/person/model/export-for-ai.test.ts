@@ -4,6 +4,7 @@ import type { Person } from './types';
 import { PersonColor } from './types';
 
 function createPerson(overrides: Partial<Person> = {}): Person {
+  const { expression, ...rest } = overrides;
   return {
     id: 'p1',
     color: PersonColor.BLUE,
@@ -18,7 +19,8 @@ function createPerson(overrides: Partial<Person> = {}): Person {
       imageOffsetX: 0,
       imageOffsetY: 0
     },
-    ...overrides
+    ...rest,
+    expression: expression ?? null
   };
 }
 

@@ -41,6 +41,7 @@ function createPerson(id: string, overrides: Partial<Person> = {}): Person {
       imageOffsetX: 0,
       imageOffsetY: 0
     },
+    expression: null,
     ...overrides
   };
 }
@@ -128,7 +129,12 @@ describe('MatchPhotoView', () => {
     render(<MatchPhotoView />);
 
     const uploadButtons = screen.getAllByRole('button', { name: '사진 업로드' });
-    await user.click(uploadButtons[0]!);
+    const firstUploadButton = uploadButtons[0];
+    expect(firstUploadButton).toBeTruthy();
+    if (!firstUploadButton) {
+      throw new Error('사진 업로드 버튼이 최소 1개 존재해야 합니다.');
+    }
+    await user.click(firstUploadButton);
 
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement | null;
     expect(fileInput).not.toBeNull();

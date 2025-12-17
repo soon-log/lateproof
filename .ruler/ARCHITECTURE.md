@@ -2,7 +2,18 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-17 (Azure Face 검증 실패 토스트(Shadcn/Sonner) 적용)
+> **Last Updated**: 2025-12-18 (EXPRESSION Step 표정 선택 UI 구현)
+
+---
+
+## 2025-12-18 업데이트
+- 추가: `emoji-picker-react` 패키지 — 이모티콘 선택 UI
+- 변경: `src/entities/person/model/types.ts` — `ExpressionEmoji` 타입을 string으로 확장, `EXPRESSION_PRESETS` 추가
+- 변경: `src/entities/person/model/store.ts` — `setExpression`, `clearExpression` 액션 추가
+- 추가: `src/features/expression-select/ui/expression-person-button.tsx` — 인물 선택 버튼 컴포넌트
+- 추가: `src/features/expression-select/ui/expression-grid.tsx` — emoji-picker-react 기반 표정 선택 UI
+- 변경: `src/features/expression-select/ui/expression-select-view.tsx` — 상단 인물 버튼 + 하단 표정 선택 UI 통합
+- 추가: 각 컴포넌트별 테스트 및 스토리 파일
 
 ---
 

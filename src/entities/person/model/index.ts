@@ -10,6 +10,7 @@ export {
   usePersonStore
 } from './store';
 export type {
+  ExpressionEmoji,
   MarkerTransform,
   MatchStepDataForAI,
   Person,
@@ -17,4 +18,4 @@ export type {
   PersonForAI,
   PersonState
 } from './types';
-export { PERSON_COLOR_ORDER, PERSON_COLOR_VALUES, PersonColor } from './types';
+export { EXPRESSION_PRESETS, PERSON_COLOR_ORDER, PERSON_COLOR_VALUES, PersonColor } from './types';
