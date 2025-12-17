@@ -88,27 +88,82 @@ app → pages → widgets → features → entities → shared
 
 - 테스트 커버리지 80% 이상 준수
 - 파일당 코드의 줄 수는 500줄을 넘기지 않도록 권장
+- 코드(파일) 수정/추가 후 `pnpm check`를 실행하고, 문제가 발생하지 않을 때까지 수정·보완한다 (Biome 설정 수정 금지)
 
-## 테스트/스토리 강제 규칙
+## 테스트/스토리 강제 규칙 (⚠️ 필수 - 예외 없음)
 
-### 대상
+> **🚨 중요**: 컴포넌트 및 Hook 개발 시 테스트 코드와 Storybook은 **반드시** 함께 작성해야 합니다.
+> 
+> **테스트/스토리 없이 PR을 올리면 리뷰가 거부됩니다.**
+> 
+> **테스트/스토리 없이 개발을 완료했다고 말하면 안 됩니다.**
 
-- `src/**/ui/*.tsx` (pages/widgets/features/entities)
-- `src/shared/components/ui/*.tsx`
+### 대상 파일
+
+| 경로 패턴 | 테스트 필수 | 스토리 필수 |
+|----------|:---------:|:---------:|
+| `src/**/ui/*.tsx` (pages/widgets/features/entities) | ✅ | ✅ |
+| `src/shared/components/ui/*.tsx` | ✅ | ✅ |
+| `src/**/model/*.ts` (hooks/stores) | ✅ | ❌ |
 
 ### 필수 산출물
 
-1. **Unit Test 필수**: 동일 경로에 `*.test.tsx` 작성
-   - 최소 요구사항: 렌더링 + 핵심 인터랙션(클릭/비활성/로딩 등) 1개 이상 검증
-2. **Storybook Story 필수**: 동일 경로에 `*.stories.tsx` 작성
-   - 최소 요구사항: `Default` 포함, 그리고 핵심 상태 1개 이상(예: `Selected`, `Loading`, `Disabled`, `Error`) 추가
+#### 1. Unit Test (모든 대상 파일 필수)
+- **파일명**: 동일 경로에 `*.test.tsx` 또는 `*.test.ts`
+- **최소 요구사항**:
+  - UI 컴포넌트: 렌더링 테스트 + 핵심 인터랙션(클릭/비활성/로딩 등) 1개 이상
+  - Hook/Store: 주요 액션과 상태 변경 검증
 
-### 예외/가이드
+```typescript
+// 예시: src/features/match-photo/ui/person-button.test.tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { PersonButton } from './person-button';
 
-- `index.ts`(Public API) 파일은 테스트/스토리 대상에서 제외
-- 훅/스토어 의존 UI(컨테이너 컴포넌트)는 **Story/Test를 위해 상태 주입이 가능한 형태**로 만들 것
+describe('PersonButton', () => {
+  it('렌더링 테스트', () => { /* ... */ });
+  it('클릭 시 onSelect 호출', () => { /* ... */ });
+  it('삭제 버튼 클릭 시 onDelete 호출', () => { /* ... */ });
+});
+```
+
+#### 2. Storybook Story (UI 컴포넌트 필수)
+- **파일명**: 동일 경로에 `*.stories.tsx`
+- **최소 요구사항**:
+  - `Default` 스토리 필수
+  - 핵심 상태 스토리 1개 이상 (예: `Selected`, `Loading`, `Disabled`, `Error`, `WithPhoto`)
+
+```typescript
+// 예시: src/features/match-photo/ui/person-button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { PersonButton } from './person-button';
+
+const meta: Meta<typeof PersonButton> = { /* ... */ };
+export default meta;
+
+export const Default: StoryObj<typeof PersonButton> = {};
+export const Active: StoryObj<typeof PersonButton> = {};
+export const WithPhoto: StoryObj<typeof PersonButton> = {};
+```
+
+### 개발 완료 체크리스트 (PR 전 필수 확인)
+
+**⚠️ 아래 항목을 모두 충족하지 않으면 개발 완료가 아닙니다:**
+
+- [ ] 각 UI 컴포넌트에 대한 `*.test.tsx` 파일 작성 완료
+- [ ] 각 Hook/Store에 대한 `*.test.ts` 파일 작성 완료
+- [ ] `pnpm check` 실행하여 Biome 검사 통과 확인 (문제 발생 시 해결할 때까지 반복)
+- [ ] `pnpm test` 실행하여 모든 테스트 통과 확인
+- [ ] 각 UI 컴포넌트에 대한 `*.stories.tsx` 파일 작성 완료
+- [ ] `pnpm storybook` 실행하여 모든 스토리 렌더링 확인
+
+### 예외 상황
+
+- `index.ts` (Public API 배럴 파일): 테스트/스토리 대상 제외
+- 순수 타입 정의 파일 (`types.ts`): 테스트/스토리 대상 제외
+- 컨테이너 컴포넌트: **상태 주입이 가능한 형태로 설계** 필수
   - 권장: `Presentational(ui)` + `Controller(model)` 분리
-  - 또는: `flow`/`viewModel` 같은 **props 주입 옵션** 제공(단, React Hook 규칙을 위반하지 않도록 훅 호출은 항상 최상단에서 고정)
+  - 또는: props로 mock 데이터/핸들러 주입 가능하게 설계
+
 
 ## UI / 로직 분리 규칙 (지속 반영)
 화면 컴포넌트가 비대해지는 것을 방지하기 위해, 앞으로 모든 구현에서 UI와 로직을 분리하는 원칙을 **기본값**으로 적용합니다.

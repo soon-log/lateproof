@@ -107,11 +107,15 @@ describe('useStepStore', () => {
       });
 
       act(() => {
+        result.current.nextStep(Step.EXPRESSION);
+      });
+
+      act(() => {
         result.current.nextStep(Step.PAYMENT);
       });
 
       expect(result.current.currentStep).toBe(Step.PAYMENT);
-      expect(result.current.history).toHaveLength(3);
+      expect(result.current.history).toHaveLength(4);
     });
   });
 
@@ -190,16 +194,19 @@ describe('useStepStore', () => {
       act(() => {
         result.current.nextStep(Step.UPLOAD);
         result.current.nextStep(Step.MATCH);
+        result.current.nextStep(Step.EXPRESSION);
         result.current.nextStep(Step.PAYMENT);
       });
 
-      expect(result.current.history).toHaveLength(3);
+      expect(result.current.history).toHaveLength(4);
       expect(result.current.history?.[0]?.from).toBe(Step.SELECT_MODE);
       expect(result.current.history?.[0]?.to).toBe(Step.UPLOAD);
       expect(result.current.history?.[1]?.from).toBe(Step.UPLOAD);
       expect(result.current.history?.[1]?.to).toBe(Step.MATCH);
       expect(result.current.history?.[2]?.from).toBe(Step.MATCH);
-      expect(result.current.history?.[2]?.to).toBe(Step.PAYMENT);
+      expect(result.current.history?.[2]?.to).toBe(Step.EXPRESSION);
+      expect(result.current.history?.[3]?.from).toBe(Step.EXPRESSION);
+      expect(result.current.history?.[3]?.to).toBe(Step.PAYMENT);
     });
 
     it('각 전환에 타임스탬프가 기록되어야 한다', () => {

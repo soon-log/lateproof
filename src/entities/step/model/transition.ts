@@ -17,11 +17,16 @@ export const TRANSITION_TABLE: Record<Step, Step[]> = {
 
   [Step.MATCH]: [
     Step.UPLOAD, // 뒤로 가기
-    Step.PAYMENT // 검증 성공 후 결제
+    Step.EXPRESSION // 다음: 표정 선택
+  ],
+
+  [Step.EXPRESSION]: [
+    Step.MATCH, // 뒤로 가기
+    Step.PAYMENT // 다음: 결제
   ],
 
   [Step.PAYMENT]: [
-    Step.MATCH, // 뒤로 가기
+    Step.EXPRESSION, // 뒤로 가기
     Step.GENERATE // 결제 성공 후 생성
   ],
 

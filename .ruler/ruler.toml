@@ -1,8 +1,11 @@
-default_agents = ["cursor", "codex"]
+default_agents = ["cursor", "codex", "antigravity"]
 
 nested = true
 
 [agents.codex]
+enabled = true
+
+[agents.antigravity]
 enabled = true
 
 [agents.cursor]

@@ -2,15 +2,15 @@
 
 > **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
 > **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
-> **Last Updated**: 2025-12-17 (UPLOAD Step 범위 축소(파일 상태 저장+MATCH 이동) + entities/photo 추가 + MATCH Task 이관)
+> **Last Updated**: 2025-12-17 (MATCH 인물 추가 기본 배치 우측 스택으로 변경, 얼굴 이미지 크기 조절 추가)
 
 ---
 
 ## 📊 Current Status
 
 **현재 Phase**: `M2 — Photo Mode Core Flow`  
-**전체 진행률**: `16.9%` (27/160 tasks)  
-**현재 작업 중**: 없음 (M2-E4-T01 진행 대기)  
+**전체 진행률**: `23.0%` (37/161 tasks)  
+**현재 작업 중**: M2-E5-T03 (표정 선택 UI)  
 **차단 요소**: 없음
 
 ---
@@ -19,18 +19,23 @@
 
 ### 지금 작업 중인 Task
 
-- [x] M2-E2-T01: Photo/Map 선택 UI ✅ 완료
-- [x] M2-E2-T02: Step 이동 처리 ✅ 완료
-- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) ✅ 완료
-- [x] M2-E3-T01: 이미지 업로드(Dropzone) + 파일 상태 저장(entities/photo) + MATCH 이동 + UI/Page 테스트/스토리 ✅ 완료
+- [x] M2-E4-T01: Person 마커 시스템 구현 ✅ 완료
+- [x] M2-E4-T02: 마커 스케일/회전 핸들 구현 ✅ 완료
+- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋/크기 조정 ✅ 완료
+- [x] M2-E4-T04: 인물 설정 패널 UI ✅ 완료
+- [x] M2-E4-T05: 뒤로가기 시 Person 상태 초기화 ✅ 완료
+- [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 ✅ 완료
+- [x] M2-E5-T01: EXPRESSION Step FSM 전이 규칙 ✅ 완료
+- [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 ✅ 완료
 
-**🎉 Epic 2.2 — SELECT_MODE Step 완료!**
+**🎉 Epic 2.4 — MATCH Step 구현 + 테스트/스토리 완료!**
 
 ### 다음 작업 (우선순위 순)
 
-1. **M2-E4-T01**: 인물 원 5개까지 생성 기능
-2. **M2-E4-T05**: orientation fix
-3. **M2-E4-T06**: 확대/이동 기능
+1. **M2-E6-T01**: Azure Face API Wrapper 작성
+2. **M2-E6-T02**: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
+3. **M2-E5-T03**: 인물별 표정 선택 UI 구현
+4. **M2-E5-T04**: 표정 데이터 저장 및 AI 전달용 포맷
 
 ---
 
@@ -80,10 +85,25 @@
 #### Epic 2.3 — UPLOAD Step ✅ 완료
 - [x] M2-E3-T01: 이미지 업로드(파일 선택) + 파일 상태 저장(entities/photo) + MATCH 이동 (src/entities/photo/model/store.ts, src/features/upload-photo/model/use-upload-photo-flow.ts)
 
+#### Epic 2.4 — MATCH Step ✅ 완료 (7/7 tasks)
+- [x] M2-E4-T01: Person 마커 시스템 구현 + 인물 추가 시 기본 스택 배치 (src/entities/person/model/store.ts, src/features/match-photo/ui/person-marker.tsx)
+- [x] M2-E4-T02: 마커 스케일/회전 핸들 구현 (Active 상태에서만 표시)
+- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋/크기 조정 기능
+- [x] M2-E4-T04: 인물 설정 패널 UI (src/features/match-photo/ui/person-list-panel.tsx)
+- [x] M2-E4-T05: 뒤로가기 시 Person 상태 초기화 (StepHeader onBeforeBack prop)
+- [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 (src/entities/person/model/export-for-ai.ts)
+- [x] M2-E4-T07: MATCH Step 컴포넌트 테스트/스토리 작성
+
+#### Epic 2.5 — EXPRESSION Step 🚧 진행 중 (2/4 tasks)
+- [x] M2-E5-T01: EXPRESSION Step FSM 전이 규칙 추가
+- [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI (src/features/expression-select/ui/expression-select-view.tsx)
+- [ ] M2-E5-T03: 인물별 표정 선택 UI 구현
+- [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
+
 ### 통계
-- **완료**: 27 tasks
-- **진행 중**: 0 tasks
-- **남은 작업**: 133 tasks
+- **완료**: 37 tasks
+- **진행 중**: 1 tasks
+- **남은 작업**: 123 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
@@ -93,6 +113,9 @@
 - **M2-E1**: ✅ 100% (3/3 tasks) — FSM 구축 완료
 - **M2-E2**: ✅ 100% (3/3 tasks) — SELECT_MODE Step 완료
 - **M2-E3**: ✅ 100% (1/1 tasks) — UPLOAD Step 완료
+- **M2-E4**: ✅ 100% (7/7 tasks) — MATCH Step 완료
+- **M2-E5**: 🚧 50% (2/4 tasks) — EXPRESSION Step 진행 중
+
 
 ---
 
@@ -187,7 +210,7 @@
 - [x] `@testing-library/react` — 컴포넌트 테스트
 - [x] `msw` — API Mocking
 - [x] `@playwright/test` — E2E 테스트
-- [x] `@storybook/react` — UI 카탈로그
+- [x] `@storybook/nextjs-vite` — UI 카탈로그
 
 ### 아직 설치되지 않은 필수 패키지
 

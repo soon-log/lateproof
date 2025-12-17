@@ -2,9 +2,15 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-17 (UI 테스트/스토리 보강 + Storybook/Vitest `next/image` 대응)
+> **Last Updated**: 2025-12-17 (MATCH 인물 추가 기본 배치 개선, 얼굴 이미지 크기 조절 상태 추가)
 
 ---
+
+## 2025-12-17 업데이트
+- 변경: `src/entities/person/model/types.ts` — `MarkerTransform.imageScale`(얼굴 이미지 크기) 추가, `PersonForAI.faceImageScale` 반영
+- 변경: `src/entities/person/model/store.ts` — 인물 추가 시 Active 마커 기준으로 "반쯤 겹치게" 우측 스택 배치
+- 변경: `src/features/match-photo/ui/person-marker.tsx` — 마커 내부 얼굴 이미지 +/- 크기 조절 컨트롤 추가
+- 변경: `src/entities/person/model/export-for-ai.ts` — AI 전달 데이터에 얼굴 이미지 스케일 포함 및 프롬프트 출력 개선
 
 ## 📁 Project Structure
 
@@ -73,6 +79,15 @@ lateproof/
 │   │   │   │   ├── store.test.ts  # Store Unit Test (17 tests)
 │   │   │   │   └── index.ts  # model Public API
 │   │   │   └── index.ts      # entity Public API
+│   │   ├── person/           # Person 엔티티 (인물 마커 상태 관리) - Epic 2.4
+│   │   │   ├── model/
+│   │   │   │   ├── types.ts      # PersonColor, MarkerTransform, Person, PersonState
+│   │   │   │   ├── export-for-ai.ts   # MATCH Step AI 전달용 변환 유틸
+│   │   │   │   ├── export-for-ai.test.ts
+│   │   │   │   ├── store.ts      # Person Store (Zustand) - 최대 5명, 초기화/재초기화
+│   │   │   │   ├── store.test.ts
+│   │   │   │   └── index.ts      # model Public API
+│   │   │   └── index.ts          # entity Public API
 │   │   └── README.md
 │   │
 │   ├── features/             # Features Layer (비즈니스 기능, 쓰기 작업)
@@ -88,6 +103,33 @@ lateproof/
 │   │   │   │   ├── upload-dropzone.tsx
 │   │   │   │   └── upload-photo-view.tsx
 │   │   │   └── index.ts
+│   │   ├── match-photo/      # 인물 마커 배치 기능 (Epic 2.4)
+│   │   │   ├── ui/
+│   │   │   │   ├── person-marker.tsx      # 이미지 위 마커 컴포넌트
+│   │   │   │   ├── person-marker.test.tsx
+│   │   │   │   ├── person-marker.stories.tsx
+│   │   │   │   ├── person-button.tsx      # 하단 사람 버튼
+│   │   │   │   ├── person-button.test.tsx
+│   │   │   │   ├── person-button.stories.tsx
+│   │   │   │   ├── add-person-button.tsx  # 사람 추가 버튼
+│   │   │   │   ├── add-person-button.test.tsx
+│   │   │   │   ├── add-person-button.stories.tsx
+│   │   │   │   ├── person-list-panel.tsx  # 하단 사람 목록 패널
+│   │   │   │   ├── person-list-panel.test.tsx
+│   │   │   │   ├── person-list-panel.stories.tsx
+│   │   │   │   ├── image-canvas.tsx       # 베이스 이미지 + 마커 오버레이
+│   │   │   │   ├── image-canvas.test.tsx
+│   │   │   │   ├── image-canvas.stories.tsx
+│   │   │   │   ├── match-photo-view.tsx   # 매칭 메인 뷰
+│   │   │   │   ├── match-photo-view.test.tsx
+│   │   │   │   └── match-photo-view.stories.tsx
+│   │   │   └── index.ts
+│   │   ├── expression-select/ # 표정 선택 기능 (Epic 2.5)
+│   │   │   ├── ui/
+│   │   │   │   ├── expression-select-view.tsx
+│   │   │   │   ├── expression-select-view.test.tsx
+│   │   │   │   └── expression-select-view.stories.tsx
+│   │   │   └── index.ts
 │   │   └── README.md
 │   │
 │   ├── pages/                # Pages Layer (페이지 조합)
@@ -98,6 +140,18 @@ lateproof/
 │   │   ├── upload-photo/     # 사진 업로드 페이지
 │   │   │   ├── ui/
 │   │   │   │   └── upload-photo-page.tsx
+│   │   │   └── index.ts
+│   │   ├── match-photo/      # 인물 매칭 페이지 (Epic 2.4)
+│   │   │   ├── ui/
+│   │   │   │   ├── match-photo-page.tsx
+│   │   │   │   ├── match-photo-page.test.tsx
+│   │   │   │   └── match-photo-page.stories.tsx
+│   │   │   └── index.ts
+│   │   ├── expression-select/ # 표정 선택 페이지 (Epic 2.5)
+│   │   │   ├── ui/
+│   │   │   │   ├── expression-select-page.tsx
+│   │   │   │   ├── expression-select-page.test.tsx
+│   │   │   │   └── expression-select-page.stories.tsx
 │   │   │   └── index.ts
 │   │   └── README.md
 │   │
@@ -314,7 +368,7 @@ src/entities/
 
 **Step Entity 상세**:
 - **step.ts**: 
-  - `Step` (as const 패턴): `SELECT_MODE`, `UPLOAD`, `MATCH`, `PAYMENT`, `GENERATE`, `RESULT`
+  - `Step` (as const 패턴): `SELECT_MODE`, `UPLOAD`, `MATCH`, `EXPRESSION`, `PAYMENT`, `GENERATE`, `RESULT`
   - `STEP_META`: 각 Step의 한글 라벨, 진행률(0~100), 뒤로가기 가능 여부
   - `STEP_ORDER`: Step 순서 배열
 - **transition.ts**:
@@ -344,6 +398,25 @@ src/entities/
 └── payment/            # 결제 엔티티 (예정)
     └── model/          # 결제 상태 타입
 ```
+
+**Person Entity 상세 (Epic 2.4 신규)**:
+- **types.ts**:
+  - `PersonColor`: 5가지 고정 색상 (BLUE, PURPLE, RED, YELLOW, GREEN)
+  - `PERSON_COLOR_ORDER`: 색상 배정 순서
+  - `PERSON_COLOR_VALUES`: CSS 클래스 매핑
+  - `MarkerTransform`: 정규화 좌표(0~1), 스케일, 회전값
+  - `Person`: 사람 데이터 (id, color, facePhoto, transform)
+  - `PersonState`: Store 상태 (persons, activePersonId, initialized)
+- **store.ts** (Zustand Person Store):
+  - `usePersonStore`: 인물 마커 상태 관리
+  - `initialize()`: MATCH 최초 진입 시 초기화 (EXPRESSION에서 돌아올 때 스킵)
+  - `reinitialize()`: 초기화 버튼용 강제 재초기화
+  - `addPerson()`: 사람 추가 (최대 5명, 고정 색상 순서)
+  - `removePerson()`: 사람 삭제 (최소 1명 유지)
+  - `setActivePerson()`: Active 사람 변경
+  - `setFacePhoto()`: 얼굴 사진 업로드
+  - `updateTransform()`: 마커 위치/스케일/회전 업데이트
+  - Selectors: `selectPersons`, `selectActivePersonId`, `selectCanAddPerson` 등
 
 ---
 
@@ -657,6 +730,60 @@ TypeScript 설정. Path Alias (`@/`) 정의.
 - 추가: src/entities/photo/model/store.ts — 선택된 `File` 저장 Store(Zustand)
 - 변경: src/features/upload-photo/model/use-upload-photo-flow.ts — 파일 선택 후 `entities/photo` 저장 + MATCH 이동
 - 변경: src/features/upload-photo/model/use-photo-upload.ts — 가짜 업로드/로딩 제거, `onNext` 콜백으로 단순화
+
+## [2025-12-17] 업데이트 - MATCH/EXPRESSION Step 구현
+- 추가: src/entities/person/ — 인물 마커 상태 관리 엔티티
+- 추가: src/entities/person/model/types.ts — PersonColor, MarkerTransform, Person, PersonState 타입 정의
+- 추가: src/entities/person/model/store.ts — Person Store (Zustand) - 초기화/재초기화, 최대 5명, 고정 색상 순서
+- 추가: src/features/match-photo/ — MATCH Step UI 컴포넌트들
+- 추가: src/features/match-photo/ui/person-marker.tsx — 드래그/스케일/회전 마커
+- 추가: src/features/match-photo/ui/person-button.tsx — 하단 사람 버튼
+- 추가: src/features/match-photo/ui/add-person-button.tsx — 사람 추가 버튼
+- 추가: src/features/match-photo/ui/person-list-panel.tsx — 하단 패널 (초기화 버튼 포함)
+- 추가: src/features/match-photo/ui/image-canvas.tsx — 베이스 이미지 + 마커 오버레이
+- 추가: src/features/match-photo/ui/match-photo-view.tsx — MATCH Step 메인 뷰
+- 추가: src/features/expression-select/ — EXPRESSION Step (placeholder)
+- 추가: src/pages/match-photo/ — MATCH 페이지
+- 추가: src/pages/expression-select/ — EXPRESSION 페이지
+- 변경: src/entities/step/model/step.ts — EXPRESSION Step 추가
+- 변경: src/entities/step/model/transition.ts — MATCH → EXPRESSION → PAYMENT 전이 규칙
+- 변경: src/app/router/step-router.tsx — MATCH, EXPRESSION 페이지 라우팅 추가
+
+## [2025-12-17] 업데이트 - PersonMarker 기능 개선
+- 변경: src/entities/person/model/types.ts — MarkerTransform에 imageOffsetX, imageOffsetY 필드 추가
+- 변경: src/entities/person/model/store.ts — DEFAULT_TRANSFORM에 imageOffset 기본값 추가
+- 변경: src/features/match-photo/ui/person-marker.tsx — 회전 기능 개선 (회전 wrapper 분리), 이미지 오프셋 핸들 추가
+- 변경: src/features/match-photo/ui/person-button.tsx — layout 애니메이션 제거 (버벅임 해결)
+- 변경: src/features/match-photo/ui/person-list-panel.tsx — AnimatePresence mode를 sync로 변경
+- 변경: src/features/match-photo/ui/image-canvas.tsx — onImageOffsetChange prop 추가
+- 변경: src/features/match-photo/ui/match-photo-view.tsx — 이미지 오프셋 핸들러 추가
+
+## [2025-12-17] 업데이트 - MATCH/EXPRESSION 테스트·스토리 보강
+- 추가: src/features/match-photo/ui/*.test.tsx — MATCH UI 유닛 테스트
+- 추가: src/features/match-photo/ui/*.stories.tsx — MATCH UI 스토리
+- 추가: src/pages/match-photo/ui/*.test.tsx — MATCH Page 유닛 테스트
+- 추가: src/pages/match-photo/ui/*.stories.tsx — MATCH Page 스토리
+- 추가: src/features/expression-select/ui/*.test.tsx — EXPRESSION UI 유닛 테스트
+- 추가: src/features/expression-select/ui/*.stories.tsx — EXPRESSION UI 스토리
+- 추가: src/pages/expression-select/ui/*.test.tsx — EXPRESSION Page 유닛 테스트
+- 추가: src/pages/expression-select/ui/*.stories.tsx — EXPRESSION Page 스토리
+- 추가: src/entities/person/model/store.test.ts — Person Store 유닛 테스트
+- 추가: src/entities/person/model/export-for-ai.test.ts — MATCH 데이터 내보내기 유틸 유닛 테스트
+- 변경: src/features/match-photo/ui/person-button.tsx — 중첩 button 제거(하이드레이션 오류 방지)
+- 변경: vitest.setup.ts — next/image mock 개선 + pointer capture polyfill
+
+## [2025-12-17] 업데이트 - Biome lint 정리 및 검사 규칙
+- 변경: src/entities/person/index.ts — Public API를 named export로 변경(noReExportAll 대응)
+- 변경: src/entities/person/model/index.ts — model Public API를 named export로 변경(noReExportAll 대응)
+- 변경: src/entities/person/model/store.ts — 액션 분리/타입 정리로 Biome lint 대응
+- 변경: src/features/match-photo/ui/person-marker.tsx — 로직 분리 + `next/image`로 전환(noImgElement/noExcessiveLines 대응)
+- 변경: src/features/match-photo/ui/person-list-panel.tsx — 리스트 렌더링 분리(useSolidForComponent 경고 대응)
+- 변경: src/features/match-photo/ui/image-canvas.tsx — 리스트 렌더링 분리(useSolidForComponent 경고 대응)
+- 변경: src/features/expression-select/ui/expression-select-view.tsx — `next/image`로 전환 + 리스트 렌더링 정리
+- 변경: .ruler/AGENTS.md — 코드 변경 시 `pnpm check`를 통과할 때까지 보완 규칙 추가
+- 변경: src/features/match-photo/ui/person-button.tsx — 카드 영역 클릭으로 Active 선택 가능하도록 UX 복원(중첩 button 없이 처리)
+- 변경: src/features/match-photo/ui/person-list-panel.tsx — 업로드 클릭 시 대상 인물을 Active로 자동 선택
+
 
 ## 📌 Key Principles
 

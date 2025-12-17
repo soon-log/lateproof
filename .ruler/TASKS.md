@@ -56,35 +56,41 @@ ID 규칙:
 - [x] M2-E3-T01: 이미지 업로드(Dropzone) + 파일 상태 저장(entities/photo) + MATCH 이동 + UI/Page 테스트/스토리
 
 ## Epic 2.4 — MATCH Step
-- [ ] M2-E4-T01: 인물 원 5개까지 생성 기능
-- [ ] M2-E4-T02: 원 색상 선택
-- [ ] M2-E4-T03: 표정 선택 UI
-- [ ] M2-E4-T04: 좌표 Payload Builder
-- [ ] M2-E4-T05: orientation fix
-- [ ] M2-E4-T06: 확대/이동 기능
-- [ ] M2-E4-T07: 편집된 좌표 데이터 생성
+- [x] M2-E4-T01: Person 마커 시스템 구현 (최대 5명, 색상 배정, 드래그 이동, 인물 추가 시 기본 스택 배치)
+- [x] M2-E4-T02: 마커 스케일/회전 핸들 구현 (Active 상태에서만 표시)
+- [x] M2-E4-T03: 얼굴 사진 업로드 및 이미지 오프셋/크기 조정 기능
+- [x] M2-E4-T04: 인물 설정 패널 UI (추가/삭제/초기화 버튼)
+- [x] M2-E4-T05: 뒤로가기 시 Person 상태 초기화
+- [x] M2-E4-T06: AI 이미지 생성용 데이터 내보내기 유틸리티 (PersonForAI, MatchStepDataForAI)
+- [x] M2-E4-T07: MATCH Step 컴포넌트 테스트/스토리 작성 (AGENTS.md 규칙 준수)
 
-## Epic 2.5 — 얼굴 검증
-- [ ] M2-E5-T01: Azure Face API Wrapper 작성
-- [ ] M2-E5-T02: WARN → FAIL 처리
-- [ ] M2-E5-T03: FAIL 시 Step 롤백
-- [ ] M2-E5-T04: PASS 시 PAYMENT 이동
+## Epic 2.5 — EXPRESSION Step (신규)
+- [x] M2-E5-T01: EXPRESSION Step 추가 (FSM 전이 규칙 업데이트)
+- [x] M2-E5-T02: ExpressionSelectView 플레이스홀더 UI
+- [ ] M2-E5-T03: 인물별 표정 선택 UI 구현
+- [ ] M2-E5-T04: 표정 데이터 저장 및 AI 전달용 포맷
 
-## Epic 2.6 — PAYMENT Step
-- [ ] M2-E6-T01: Toss Payments SDK 연동
-- [ ] M2-E6-T02: 결제 성공 처리
-- [ ] M2-E6-T03: 결제 실패 처리
+## Epic 2.6 — 얼굴 검증 (MATCH Step 통합)
+- [ ] M2-E6-T01: Azure Face API Wrapper 작성
+- [ ] M2-E6-T02: MATCH Step에서 얼굴 사진 업로드 시 Azure Face 검증 통합
+- [ ] M2-E6-T03: 검증 실패 시 사용자 피드백 UI (WARN/FAIL 처리)
+- [ ] M2-E6-T04: 검증 통과 시 다음 단계 진행 허용
 
-## Epic 2.7 — GENERATE Step
-- [ ] M2-E7-T01: Nanobanana Payload Builder
-- [ ] M2-E7-T02: 3장 생성 요청
-- [ ] M2-E7-T03: 실패 시 1장 재생성 기능
+## Epic 2.7 — PAYMENT Step
+- [ ] M2-E7-T01: Toss Payments SDK 연동
+- [ ] M2-E7-T02: 결제 성공 처리
+- [ ] M2-E7-T03: 결제 실패 처리
 
-## Epic 2.8 — RESULT Step
-- [ ] M2-E8-T01: 3장 썸네일 렌더링
-- [ ] M2-E8-T02: 이미지 확대 보기
-- [ ] M2-E8-T03: 다운로드 기능
-- [ ] M2-E8-T04: 단일 재생성 버튼 처리
+## Epic 2.8 — GENERATE Step
+- [ ] M2-E8-T01: Nanobanana Payload Builder
+- [ ] M2-E8-T02: 3장 생성 요청
+- [ ] M2-E8-T03: 실패 시 1장 재생성 기능
+
+## Epic 2.9 — RESULT Step
+- [ ] M2-E9-T01: 3장 썸네일 렌더링
+- [ ] M2-E9-T02: 이미지 확대 보기
+- [ ] M2-E9-T03: 다운로드 기능
+- [ ] M2-E9-T04: 단일 재생성 버튼 처리
 
 ---
 

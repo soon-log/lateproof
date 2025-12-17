@@ -3,6 +3,8 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Step } from '@/entities/step/model/step';
 import { selectCurrentStep, useStepStore } from '@/entities/step/model/store';
+import { ExpressionSelectPage } from '@/pages/expression-select';
+import { MatchPhotoPage } from '@/pages/match-photo';
 import { SelectModePage } from '@/pages/select-mode';
 import { UploadPhotoPage } from '@/pages/upload-photo';
 
@@ -36,11 +38,8 @@ export function StepRouter() {
           >
             {currentStep === Step.SELECT_MODE && <SelectModePage />}
             {currentStep === Step.UPLOAD && <UploadPhotoPage />}
-            {currentStep === Step.MATCH && (
-              <div className="flex w-full items-center justify-center py-24">
-                <p className="text-2xl text-neutral-500">MATCH Step (예정)</p>
-              </div>
-            )}
+            {currentStep === Step.MATCH && <MatchPhotoPage />}
+            {currentStep === Step.EXPRESSION && <ExpressionSelectPage />}
             {currentStep === Step.PAYMENT && (
               <div className="flex w-full items-center justify-center py-24">
                 <p className="text-2xl text-neutral-500">PAYMENT Step (예정)</p>

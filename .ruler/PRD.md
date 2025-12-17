@@ -50,8 +50,20 @@
 # 4. 사용자 흐름 (Flow)
 
 ```
-SELECT_MODE → UPLOAD → MATCH → PAYMENT → GENERATE → RESULT
+SELECT_MODE → UPLOAD → MATCH → EXPRESSION → PAYMENT → GENERATE → RESULT
 ```
+
+### Step 설명
+
+| Step | 설명 |
+|------|------|
+| SELECT_MODE | 사진 기반 / 지도 기반 모드 선택 |
+| UPLOAD | 베이스 이미지(배경) 업로드 |
+| MATCH | 인물 마커 배치 (최대 5명), 얼굴 사진 업로드, 위치/크기/회전/얼굴 위치 조정 |
+| EXPRESSION | 각 인물별 표정 선택 (이모지 기반) |
+| PAYMENT | 결제 진행 (Toss Payments) |
+| GENERATE | AI 이미지 생성 (3장) |
+| RESULT | 결과 확인 및 다운로드 |
 
 모든 Step 전환은 FSM(State Machine) 규칙에 따라 통제한다.
 

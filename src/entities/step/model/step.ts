@@ -2,7 +2,7 @@
  * Step — LateProof 워크플로우 단계 정의
  *
  * @description
- * SELECT_MODE → UPLOAD → MATCH → PAYMENT → GENERATE → RESULT 순서로 진행
+ * SELECT_MODE → UPLOAD → MATCH → EXPRESSION → PAYMENT → GENERATE → RESULT 순서로 진행
  * Transition Table에 정의된 규칙에 따라서만 Step 전환 가능
  */
 
@@ -10,6 +10,7 @@ export const Step = {
   SELECT_MODE: 'SELECT_MODE',
   UPLOAD: 'UPLOAD',
   MATCH: 'MATCH',
+  EXPRESSION: 'EXPRESSION',
   PAYMENT: 'PAYMENT',
   GENERATE: 'GENERATE',
   RESULT: 'RESULT'
@@ -40,7 +41,13 @@ export const STEP_META: Record<Step, StepMeta> = {
   [Step.MATCH]: {
     step: Step.MATCH,
     label: '얼굴 매칭',
-    progress: 40,
+    progress: 35,
+    canGoBack: true
+  },
+  [Step.EXPRESSION]: {
+    step: Step.EXPRESSION,
+    label: '표정 선택',
+    progress: 50,
     canGoBack: true
   },
   [Step.PAYMENT]: {
@@ -67,6 +74,7 @@ export const STEP_ORDER: Step[] = [
   Step.SELECT_MODE,
   Step.UPLOAD,
   Step.MATCH,
+  Step.EXPRESSION,
   Step.PAYMENT,
   Step.GENERATE,
   Step.RESULT

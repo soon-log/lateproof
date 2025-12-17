@@ -38,12 +38,16 @@ describe('TRANSITION_TABLE', () => {
     expect(TRANSITION_TABLE[Step.UPLOAD]).toEqual([Step.SELECT_MODE, Step.MATCH]);
   });
 
-  it('MATCH는 UPLOAD와 PAYMENT로 전환 가능해야 한다', () => {
-    expect(TRANSITION_TABLE[Step.MATCH]).toEqual([Step.UPLOAD, Step.PAYMENT]);
+  it('MATCH는 UPLOAD와 EXPRESSION으로 전환 가능해야 한다', () => {
+    expect(TRANSITION_TABLE[Step.MATCH]).toEqual([Step.UPLOAD, Step.EXPRESSION]);
   });
 
-  it('PAYMENT는 MATCH와 GENERATE로 전환 가능해야 한다', () => {
-    expect(TRANSITION_TABLE[Step.PAYMENT]).toEqual([Step.MATCH, Step.GENERATE]);
+  it('EXPRESSION은 MATCH와 PAYMENT로 전환 가능해야 한다', () => {
+    expect(TRANSITION_TABLE[Step.EXPRESSION]).toEqual([Step.MATCH, Step.PAYMENT]);
+  });
+
+  it('PAYMENT는 EXPRESSION과 GENERATE로 전환 가능해야 한다', () => {
+    expect(TRANSITION_TABLE[Step.PAYMENT]).toEqual([Step.EXPRESSION, Step.GENERATE]);
   });
 
   it('GENERATE는 RESULT로만 전환 가능해야 한다', () => {
@@ -69,8 +73,12 @@ describe('canTransition', () => {
       expect(canTransition(Step.UPLOAD, Step.SELECT_MODE)).toBe(true);
     });
 
-    it('MATCH → PAYMENT 전환이 가능해야 한다', () => {
-      expect(canTransition(Step.MATCH, Step.PAYMENT)).toBe(true);
+    it('MATCH → EXPRESSION 전환이 가능해야 한다', () => {
+      expect(canTransition(Step.MATCH, Step.EXPRESSION)).toBe(true);
+    });
+
+    it('EXPRESSION → PAYMENT 전환이 가능해야 한다', () => {
+      expect(canTransition(Step.EXPRESSION, Step.PAYMENT)).toBe(true);
     });
 
     it('PAYMENT → GENERATE 전환이 가능해야 한다', () => {
@@ -154,13 +162,19 @@ describe('getNextSteps', () => {
 
   it('MATCH의 다음 Step 목록을 반환해야 한다', () => {
     const nextSteps = getNextSteps(Step.MATCH);
-    expect(nextSteps).toEqual([Step.UPLOAD, Step.PAYMENT]);
+    expect(nextSteps).toEqual([Step.UPLOAD, Step.EXPRESSION]);
+    expect(nextSteps).toHaveLength(2);
+  });
+
+  it('EXPRESSION의 다음 Step 목록을 반환해야 한다', () => {
+    const nextSteps = getNextSteps(Step.EXPRESSION);
+    expect(nextSteps).toEqual([Step.MATCH, Step.PAYMENT]);
     expect(nextSteps).toHaveLength(2);
   });
 
   it('PAYMENT의 다음 Step 목록을 반환해야 한다', () => {
     const nextSteps = getNextSteps(Step.PAYMENT);
-    expect(nextSteps).toEqual([Step.MATCH, Step.GENERATE]);
+    expect(nextSteps).toEqual([Step.EXPRESSION, Step.GENERATE]);
     expect(nextSteps).toHaveLength(2);
   });
 
@@ -215,9 +229,15 @@ describe('validateTransition', () => {
       }).not.toThrow();
     });
 
-    it('MATCH → PAYMENT 전환을 허용해야 한다', () => {
+    it('MATCH → EXPRESSION 전환을 허용해야 한다', () => {
       expect(() => {
-        validateTransition(Step.MATCH, Step.PAYMENT);
+        validateTransition(Step.MATCH, Step.EXPRESSION);
+      }).not.toThrow();
+    });
+
+    it('EXPRESSION → PAYMENT 전환을 허용해야 한다', () => {
+      expect(() => {
+        validateTransition(Step.EXPRESSION, Step.PAYMENT);
       }).not.toThrow();
     });
 
@@ -301,7 +321,8 @@ describe('전체 워크플로우 시나리오', () => {
     const happyPath = [
       { from: Step.SELECT_MODE, to: Step.UPLOAD },
       { from: Step.UPLOAD, to: Step.MATCH },
-      { from: Step.MATCH, to: Step.PAYMENT },
+      { from: Step.MATCH, to: Step.EXPRESSION },
+      { from: Step.EXPRESSION, to: Step.PAYMENT },
       { from: Step.PAYMENT, to: Step.GENERATE },
       { from: Step.GENERATE, to: Step.RESULT },
       { from: Step.RESULT, to: Step.SELECT_MODE }
@@ -315,7 +336,8 @@ describe('전체 워크플로우 시나리오', () => {
 
   it('뒤로가기 시나리오가 올바르게 동작해야 한다', () => {
     const backwardPath = [
-      { from: Step.PAYMENT, to: Step.MATCH },
+      { from: Step.PAYMENT, to: Step.EXPRESSION },
+      { from: Step.EXPRESSION, to: Step.MATCH },
       { from: Step.MATCH, to: Step.UPLOAD },
       { from: Step.UPLOAD, to: Step.SELECT_MODE }
     ];
