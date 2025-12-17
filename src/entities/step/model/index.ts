@@ -5,6 +5,7 @@ export {
   selectCurrentStep,
   selectHistory,
   selectMode,
+  selectPrevStep,
   useStepStore
 } from './store';
 export {

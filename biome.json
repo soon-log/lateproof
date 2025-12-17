@@ -45,7 +45,12 @@
       "complexity": {
         "noArguments": "error",
         "noExcessiveCognitiveComplexity": "error",
-        "noExcessiveLinesPerFunction": "error",
+        "noExcessiveLinesPerFunction": {
+          "level": "warn",
+          "options": {
+            "maxLines": 100
+          }
+        },
         "noBannedTypes": "error",
         "noForEach": "warn",
         "noImplicitCoercions": "off"

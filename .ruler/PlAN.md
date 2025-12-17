@@ -2,15 +2,15 @@
 
 > **목적**: AI가 스스로 진행상황을 파악하고 다음 작업을 결정하기 위한 Task 관리 도구  
 > **갱신 방식**: 작업 완료 시마다 이 문서를 업데이트  
-> **Last Updated**: 2025-12-10 (Epic 2.2 — SELECT_MODE Step 완료)
+> **Last Updated**: 2025-12-17 (UPLOAD Step 범위 축소(파일 상태 저장+MATCH 이동) + entities/photo 추가 + MATCH Task 이관)
 
 ---
 
 ## 📊 Current Status
 
 **현재 Phase**: `M2 — Photo Mode Core Flow`  
-**전체 진행률**: `16.3%` (26/160 tasks)  
-**현재 작업 중**: 없음 (Epic 2.2 완료)  
+**전체 진행률**: `16.9%` (27/160 tasks)  
+**현재 작업 중**: 없음 (M2-E4-T01 진행 대기)  
 **차단 요소**: 없음
 
 ---
@@ -21,15 +21,16 @@
 
 - [x] M2-E2-T01: Photo/Map 선택 UI ✅ 완료
 - [x] M2-E2-T02: Step 이동 처리 ✅ 완료
-- [x] M2-E2-T03: 페이지 전환 애니메이션 ✅ 완료
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) ✅ 완료
+- [x] M2-E3-T01: 이미지 업로드(Dropzone) + 파일 상태 저장(entities/photo) + MATCH 이동 + UI/Page 테스트/스토리 ✅ 완료
 
 **🎉 Epic 2.2 — SELECT_MODE Step 완료!**
 
 ### 다음 작업 (우선순위 순)
 
-1. **M2-E3-T01**: 이미지 업로드(Dropzone) (UPLOAD Step 구현)
-2. **M2-E3-T02**: orientation fix
-3. **필수 패키지 설치**: `pnpm add react-dropzone` (필요시)
+1. **M2-E4-T01**: 인물 원 5개까지 생성 기능
+2. **M2-E4-T05**: orientation fix
+3. **M2-E4-T06**: 확대/이동 기능
 
 ---
 
@@ -72,14 +73,17 @@
 - [x] M2-E1-T03: Zustand FSM Store 구축 (src/entities/step/model/store.ts + store.test.ts)
 
 #### Epic 2.2 — SELECT_MODE Step ✅ 완료
-- [x] M2-E2-T01: Photo/Map 선택 UI (src/features/select-mode/ui/mode-card.tsx)
-- [x] M2-E2-T02: Step 이동 처리 (src/features/select-mode/ui/select-mode-view.tsx)
-- [x] M2-E2-T03: 페이지 전환 애니메이션 (src/widgets/step-router/ui/step-router.tsx)
+- [x] M2-E2-T01: Photo/Map 선택 UI + UI 테스트/스토리 (src/features/select-mode/ui/mode-card.tsx, src/features/select-mode/ui/select-mode-view.tsx)
+- [x] M2-E2-T02: Step 이동 처리 + Page 테스트/스토리 (src/pages/select-mode/ui/select-mode-page.tsx)
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) + StepHeader 스토리 (src/app/router/step-router.tsx, src/widgets/step-header/ui/step-header.tsx)
+
+#### Epic 2.3 — UPLOAD Step ✅ 완료
+- [x] M2-E3-T01: 이미지 업로드(파일 선택) + 파일 상태 저장(entities/photo) + MATCH 이동 (src/entities/photo/model/store.ts, src/features/upload-photo/model/use-upload-photo-flow.ts)
 
 ### 통계
-- **완료**: 26 tasks
+- **완료**: 27 tasks
 - **진행 중**: 0 tasks
-- **남은 작업**: 134 tasks
+- **남은 작업**: 133 tasks
 
 ### Epic 완료 현황
 - **M1-E1**: ✅ 100% (6/6 tasks) — Repository & Environment 완료
@@ -88,6 +92,7 @@
 - **M1-E4**: ✅ 100% (5/5 tasks) — Testing Environment Setup 완료
 - **M2-E1**: ✅ 100% (3/3 tasks) — FSM 구축 완료
 - **M2-E2**: ✅ 100% (3/3 tasks) — SELECT_MODE Step 완료
+- **M2-E3**: ✅ 100% (1/1 tasks) — UPLOAD Step 완료
 
 ---
 
@@ -112,14 +117,14 @@
 - [x] Testing Environment 설정 (Vitest, Testing Library, MSW, Playwright)
 - [x] 기본 UI 컴포넌트 — Button 완료 및 테스트 작성
 
-#### Phase 2: Photo Mode (M2) — 🚧 진행 중 (6/27 tasks, 22.2%)
+#### Phase 2: Photo Mode (M2) — 🚧 진행 중 (7/27 tasks, 25.9%)
 - [x] Step Enum 정의 (as const 패턴)
 - [x] Transition Table 정의 (FSM 규칙)
 - [x] Zustand FSM Store 구축 (14 tests 통과)
 - [x] SELECT_MODE Step UI 구현 (ModeCard, SelectModeView)
 - [x] StepRouter 구현 (Framer Motion 페이지 전환)
 - [x] Framer Motion 설치 및 애니메이션 적용
-- [ ] UPLOAD Step 구현
+- [x] UPLOAD Step 구현
 - [ ] Azure Face API 연동
 - [ ] Toss Payments 연동
 - [ ] Nanobanana API 연동

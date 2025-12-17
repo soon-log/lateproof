@@ -48,21 +48,21 @@ ID 규칙:
 - [x] M2-E1-T03: Zustand FSM Store 구축
 
 ## Epic 2.2 — SELECT_MODE Step
-- [x] M2-E2-T01: Photo/Map 선택 UI
-- [x] M2-E2-T02: Step 이동 처리
-- [x] M2-E2-T03: 페이지 전환 애니메이션
+- [x] M2-E2-T01: Photo/Map 선택 UI + UI 테스트/스토리(ModeCard/SelectModeView)
+- [x] M2-E2-T02: Step 이동 처리 + Page 테스트/스토리(SelectModePage)
+- [x] M2-E2-T03: 페이지 전환 애니메이션 + Step 공통 레이아웃(너비/헤더) + StepHeader 스토리 추가
 
 ## Epic 2.3 — UPLOAD Step
-- [ ] M2-E3-T01: 이미지 업로드(Dropzone)
-- [ ] M2-E3-T02: orientation fix
-- [ ] M2-E3-T03: 확대/이동 기능
-- [ ] M2-E3-T04: 편집된 좌표 데이터 생성
+- [x] M2-E3-T01: 이미지 업로드(Dropzone) + 파일 상태 저장(entities/photo) + MATCH 이동 + UI/Page 테스트/스토리
 
 ## Epic 2.4 — MATCH Step
 - [ ] M2-E4-T01: 인물 원 5개까지 생성 기능
 - [ ] M2-E4-T02: 원 색상 선택
 - [ ] M2-E4-T03: 표정 선택 UI
 - [ ] M2-E4-T04: 좌표 Payload Builder
+- [ ] M2-E4-T05: orientation fix
+- [ ] M2-E4-T06: 확대/이동 기능
+- [ ] M2-E4-T07: 편집된 좌표 데이터 생성
 
 ## Epic 2.5 — 얼굴 검증
 - [ ] M2-E5-T01: Azure Face API Wrapper 작성

@@ -10,6 +10,7 @@ export {
   selectCurrentStep,
   selectHistory,
   selectMode,
+  selectPrevStep,
   TRANSITION_TABLE,
   TransitionError,
   useStepStore,

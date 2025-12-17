@@ -113,3 +113,4 @@ export const selectCurrentStep = (state: StepStore) => state.currentStep;
 export const selectMode = (state: StepStore) => state.mode;
 export const selectHistory = (state: StepStore) => state.history;
 export const selectCanGoBack = (state: StepStore) => state.history.length > 0;
+export const selectPrevStep = (state: StepStore) => state.prevStep;

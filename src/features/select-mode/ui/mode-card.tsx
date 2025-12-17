@@ -55,7 +55,7 @@ export function ModeCard({
         className={`mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full ${isSelected ? 'bg-brand-500' : 'bg-brand-100'}transition-colors duration-200`}
       >
         <Icon
-          className={`h-8 w-8 ${isSelected ? 'text-white' : 'text-brand-700'}
+          className={`h-8 w-8 ${isSelected ? 'text-brand-500' : 'text-brand-800'}
           `}
         />
       </div>

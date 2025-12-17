@@ -2,7 +2,7 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-10 (Epic 2.2 완료 + FSD 구조 최종 정리)
+> **Last Updated**: 2025-12-17 (UI 테스트/스토리 보강 + Storybook/Vitest `next/image` 대응)
 
 ---
 
@@ -58,6 +58,12 @@ lateproof/
 │   │   └── README.md
 │   │
 │   ├── entities/             # Entities Layer (비즈니스 엔티티, 읽기 전용)
+│   │   ├── photo/            # Photo 엔티티 (선택된 파일 상태)
+│   │   │   ├── model/
+│   │   │   │   ├── store.ts
+│   │   │   │   ├── store.test.ts
+│   │   │   │   └── index.ts
+│   │   │   └── index.ts
 │   │   ├── step/             # Step 엔티티 (워크플로우 상태 관리)
 │   │   │   ├── model/        # 도메인 모델
 │   │   │   │   ├── step.ts   # Step as const, STEP_META, STEP_ORDER
@@ -77,12 +83,21 @@ lateproof/
 │   │   │   │   ├── mode-card.stories.tsx
 │   │   │   │   └── select-mode-view.tsx
 │   │   │   └── index.ts
+│   │   ├── upload-photo/     # 사진 업로드 기능
+│   │   │   ├── ui/
+│   │   │   │   ├── upload-dropzone.tsx
+│   │   │   │   └── upload-photo-view.tsx
+│   │   │   └── index.ts
 │   │   └── README.md
 │   │
 │   ├── pages/                # Pages Layer (페이지 조합)
 │   │   ├── select-mode/      # 모드 선택 페이지
 │   │   │   ├── ui/
 │   │   │   │   └── select-mode-page.tsx
+│   │   │   └── index.ts
+│   │   ├── upload-photo/     # 사진 업로드 페이지
+│   │   │   ├── ui/
+│   │   │   │   └── upload-photo-page.tsx
 │   │   │   └── index.ts
 │   │   └── README.md
 │   │
@@ -91,13 +106,22 @@ lateproof/
 │   │   │   └── ui/           # Shadcn/UI 기반 컴포넌트
 │   │   │       ├── button.tsx
 │   │   │       ├── button.test.tsx
-│   │   │       └── button.stories.tsx
+│   │   │       ├── button.stories.tsx
+│   │   │       ├── next-step-button.tsx
+│   │   │       ├── next-step-button.test.tsx
+│   │   │       └── next-step-button.stories.tsx
 │   │   └── lib/              # 공통 유틸리티
 │   │       ├── utils.ts      # cn() 등 유틸 함수
 │   │       ├── index.ts
 │   │       └── example.test.ts
 │   │
 │   └── widgets/              # Widgets Layer (복합 UI 블록)
+│       ├── step-header/      # Step 공통 헤더 위젯
+│       │   ├── ui/
+│       │   │   ├── step-header.tsx
+│       │   │   ├── step-header.test.tsx
+│       │   │   └── step-header.stories.tsx
+│       │   └── index.ts
 │       └── README.md
 │
 ├── .env.example              # 환경 변수 템플릿
@@ -263,17 +287,30 @@ import { StepRouter } from '@/app/router';
 **현재 구조**:
 ```
 src/entities/
+├── photo/              # Photo 엔티티 (선택된 파일 상태)
+│   ├── model/
+│   │   ├── store.ts        # Photo Store (Zustand)
+│   │   ├── store.test.ts   # Store Unit Test
+│   │   └── index.ts        # model Public API
+│   └── index.ts            # entity Public API
 ├── step/               # Step 엔티티 (워크플로우 FSM)
 │   ├── model/
 │   │   ├── step.ts     # Step as const 패턴, STEP_META, STEP_ORDER
 │   │   ├── transition.ts  # TRANSITION_TABLE, canTransition, validateTransition
 │   │   ├── types.ts    # Mode, StepState, StepTransitionContext
 │   │   ├── store.ts    # Step FSM Store (Zustand)
-│   │   ├── store.test.ts  # Store Unit Test (14 tests)
+│   │   ├── store.test.ts  # Store Unit Test (17 tests)
 │   │   └── index.ts    # model Public API
 │   └── index.ts        # entity Public API
 └── README.md
 ```
+
+**Photo Entity 상세**:
+- **store.ts** (Zustand Photo Store):
+  - `usePhotoStore`: 선택된 `File`을 Step 간 유지하기 위한 Store
+  - `setFile()`: 선택 파일 저장
+  - `clear()`: 초기화
+  - Selectors: `selectPhotoFile`
 
 **Step Entity 상세**:
 - **step.ts**: 
@@ -322,7 +359,29 @@ src/features/
 │   │   ├── mode-card.tsx           # Photo/Map 선택 카드
 │   │   ├── mode-card.test.tsx      # 7 unit tests
 │   │   ├── mode-card.stories.tsx   # 4 Storybook stories
-│   │   └── select-mode-view.tsx    # 모드 선택 뷰
+│   │   ├── select-mode-view.tsx    # 모드 선택 뷰(Presentational)
+│   │   ├── select-mode-view.test.tsx
+│   │   └── select-mode-view.stories.tsx
+│   └── index.ts
+├── upload-photo/       # 사진 업로드 기능 (Epic 2.3 진행 중)
+│   ├── model/
+│   │   ├── file.ts                # 파일 제약(크기/타입)
+│   │   ├── use-upload-dropzone.ts # Dropzone 로직 훅(react-dropzone 래핑)
+│   │   ├── use-photo-upload.ts    # 업로드 훅(파일 선택/프리뷰/업로드)
+│   │   └── use-upload-photo-flow.ts # Step 전환 오케스트레이션(성공 콜백 주입)
+│   ├── ui/
+│   │   ├── helper-text.tsx
+│   │   ├── helper-text.test.tsx
+│   │   ├── helper-text.stories.tsx
+│   │   ├── photo-preview.tsx       # 사진 미리보기(Next Image, blob 프리뷰는 unoptimized)
+│   │   ├── photo-preview.test.tsx
+│   │   ├── photo-preview.stories.tsx
+│   │   ├── upload-dropzone.tsx     # Dropzone UI (presentational)
+│   │   ├── upload-dropzone.test.tsx
+│   │   ├── upload-dropzone.stories.tsx
+│   │   ├── upload-photo-view.tsx   # 업로드 뷰 (flow 주입 가능)
+│   │   ├── upload-photo-view.test.tsx
+│   │   └── upload-photo-view.stories.tsx
 │   └── index.ts
 └── README.md
 ```
@@ -336,10 +395,8 @@ src/features/
   - Props: icon, title, description, badge, onClick, isSelected
 - **select-mode-view.tsx**:
   - 모드 선택 화면 전체 UI
-  - FSM Store 연동 (setMode, nextStep)
-  - 모드 선택 상태 관리
-  - "다음으로" 버튼 활성화/비활성화
-  - Stealth UX 문구 적용
+  - props 기반(Presentational)으로 렌더링만 수행
+  - 선택 이벤트만 외부로 방출 (`setSelectedMode`)
 
 **Features Layer 판단 기준**:
 
@@ -410,7 +467,15 @@ src/features/
 src/pages/
 ├── select-mode/        # 모드 선택 페이지 (Epic 2.2 완료)
 │   ├── ui/
-│   │   └── select-mode-page.tsx
+│   │   ├── select-mode-page.tsx
+│   │   ├── select-mode-page.test.tsx
+│   │   └── select-mode-page.stories.tsx
+│   └── index.ts
+├── upload-photo/       # 사진 업로드 페이지 (Epic 2.3 진행 중)
+│   ├── ui/
+│   │   ├── upload-photo-page.tsx
+│   │   ├── upload-photo-page.test.tsx
+│   │   └── upload-photo-page.stories.tsx
 │   └── index.ts
 └── README.md
 ```
@@ -424,7 +489,6 @@ src/pages/
 **예정된 추가 Page**:
 ```
 src/pages/
-├── upload/             # 업로드 페이지 (예정)
 ├── match/              # 매칭 페이지 (예정)
 ├── payment/            # 결제 페이지 (예정)
 └── result/             # 결과 페이지 (예정)
@@ -439,6 +503,12 @@ src/pages/
 **현재 구조**:
 ```
 src/widgets/
+├── step-header/        # Step 공통 헤더 위젯
+│   ├── ui/
+│   │   ├── step-header.tsx
+│   │   ├── step-header.test.tsx
+│   │   └── step-header.stories.tsx
+│   └── index.ts
 └── README.md
 ```
 
@@ -550,6 +620,43 @@ TypeScript 설정. Path Alias (`@/`) 정의.
 4. **주요 기능 개발 완료 시**
 
 ---
+
+## [2025-12-16] 업데이트
+- 추가: src/widgets/step-header/ — Step 공통 헤더 위젯(뒤로가기 조건 노출)
+- 변경: src/pages/select-mode/ui/select-mode-page.tsx — StepHeader로 공통 헤더 조합
+- 변경: src/pages/upload-photo/ui/upload-photo-page.tsx — StepHeader로 공통 헤더 조합
+- 변경: src/features/select-mode/ui/select-mode-view.tsx — 헤더 영역 제거(콘텐츠만 유지)
+- 변경: src/features/upload-photo/ui/upload-photo-view.tsx — 헤더/뒤로가기 제거, 미리보기 URL 언마운트 정리
+
+## [2025-12-17] 업데이트
+- 추가: src/features/upload-photo/model/use-upload-dropzone.ts — Dropzone 로직을 model 훅으로 분리
+- 추가: src/features/upload-photo/model/use-upload-photo-flow.ts — 업로드 성공 시 Step 전환을 외부 콜백으로 오케스트레이션
+- 변경: src/features/upload-photo/ui/upload-dropzone.tsx — UI 컴포넌트는 props 기반 렌더링만 수행
+- 변경: src/features/upload-photo/model/use-photo-upload.ts — 업로드 훅에서 Step 전환 제거(성공 콜백 주입)
+- 변경: src/features/upload-photo/ui/upload-photo-view.tsx — `useUploadPhotoFlow`로 Step 전환 의존성 분리
+- 변경: src/features/upload-photo/ui/photo-preview.tsx — 이미지 렌더링 `next/image`로 전환(프리뷰는 `unoptimized`)
+
+## [2025-12-17] 업데이트
+- 추가: src/features/select-mode/ui/select-mode-view.test.tsx — SelectModeView 유닛 테스트
+- 추가: src/features/select-mode/ui/select-mode-view.stories.tsx — SelectModeView 스토리
+- 추가: src/features/upload-photo/ui/*.test.tsx — UPLOAD UI 유닛 테스트
+- 추가: src/features/upload-photo/ui/*.stories.tsx — UPLOAD UI 스토리
+- 추가: src/pages/select-mode/ui/*.test.tsx — SELECT_MODE Page 유닛 테스트
+- 추가: src/pages/select-mode/ui/*.stories.tsx — SELECT_MODE Page 스토리
+- 추가: src/pages/upload-photo/ui/*.test.tsx — UPLOAD Page 유닛 테스트
+- 추가: src/pages/upload-photo/ui/*.stories.tsx — UPLOAD Page 스토리
+- 추가: src/widgets/step-header/ui/step-header.stories.tsx — StepHeader 스토리
+- 추가: .storybook/next-image.ts — Storybook에서 `next/image` 대체 렌더러
+- 변경: .storybook/main.ts — Storybook Vite alias(`next/image`) 설정
+- 변경: vitest.setup.ts — 테스트에서 `next/image` mock 추가
+- 변경: src/features/upload-photo/ui/upload-photo-view.tsx — 테스트/스토리용 flow 주입 지원
+- 변경: src/pages/upload-photo/ui/upload-photo-page.tsx — 테스트/스토리용 flow 주입 지원
+
+## [2025-12-17] 업데이트
+- 추가: src/entities/photo/ — Step 간 선택 파일 상태 유지 엔티티
+- 추가: src/entities/photo/model/store.ts — 선택된 `File` 저장 Store(Zustand)
+- 변경: src/features/upload-photo/model/use-upload-photo-flow.ts — 파일 선택 후 `entities/photo` 저장 + MATCH 이동
+- 변경: src/features/upload-photo/model/use-photo-upload.ts — 가짜 업로드/로딩 제거, `onNext` 콜백으로 단순화
 
 ## 📌 Key Principles
 

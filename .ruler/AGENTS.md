@@ -89,6 +89,76 @@ app → pages → widgets → features → entities → shared
 - 테스트 커버리지 80% 이상 준수
 - 파일당 코드의 줄 수는 500줄을 넘기지 않도록 권장
 
+## 테스트/스토리 강제 규칙
+
+### 대상
+
+- `src/**/ui/*.tsx` (pages/widgets/features/entities)
+- `src/shared/components/ui/*.tsx`
+
+### 필수 산출물
+
+1. **Unit Test 필수**: 동일 경로에 `*.test.tsx` 작성
+   - 최소 요구사항: 렌더링 + 핵심 인터랙션(클릭/비활성/로딩 등) 1개 이상 검증
+2. **Storybook Story 필수**: 동일 경로에 `*.stories.tsx` 작성
+   - 최소 요구사항: `Default` 포함, 그리고 핵심 상태 1개 이상(예: `Selected`, `Loading`, `Disabled`, `Error`) 추가
+
+### 예외/가이드
+
+- `index.ts`(Public API) 파일은 테스트/스토리 대상에서 제외
+- 훅/스토어 의존 UI(컨테이너 컴포넌트)는 **Story/Test를 위해 상태 주입이 가능한 형태**로 만들 것
+  - 권장: `Presentational(ui)` + `Controller(model)` 분리
+  - 또는: `flow`/`viewModel` 같은 **props 주입 옵션** 제공(단, React Hook 규칙을 위반하지 않도록 훅 호출은 항상 최상단에서 고정)
+
+## UI / 로직 분리 규칙 (지속 반영)
+화면 컴포넌트가 비대해지는 것을 방지하기 위해, 앞으로 모든 구현에서 UI와 로직을 분리하는 원칙을 **기본값**으로 적용합니다.
+
+### 로직은 `model`로 이동 (Hook 중심)
+- 상태/사이드이펙트/비즈니스 흐름은 훅으로 캡슐화합니다.
+- 단, **하나의 훅이 여러 관심사(예: 업로드 + Step 전환 + 라우팅 + 토스트)**를 동시에 갖지 않도록, 아래 “훅 책임 분리 규칙”을 **기본값**으로 적용합니다.
+
+### UI 컴포넌트는 “표현(Presentational)”로 유지
+- UI 컴포넌트는 가능한 한 props 기반으로 렌더링만 합니다.
+- 공통 버튼/헤더 등은 재사용 목적이 명확하면 `shared` 또는 `widgets`로 올립니다(FSD 의존성 규칙 준수).
+
+### 훅 책임 분리 규칙 (모든 상황 공통)
+
+**목표**: 훅의 책임을 “단일 관심사”로 쪼개 재사용/테스트/변경에 강하게 만든다.
+
+1. **코어 훅 vs 오케스트레이션 훅을 분리한다**
+   - **코어 훅(도메인/유틸)**: 한 가지 작업만 책임진다. 예) 파일 선택/프리뷰/업로드, 폼 상태/검증, 쿼리/뮤테이션 실행
+   - **오케스트레이션 훅(Flow/Controller)**: 여러 코어 훅을 조합하고 “화면/플로우 정책”을 결정한다. 예) Step 전환, 라우팅, 토스트/트래킹, 성공/실패 분기
+
+2. **Step 전환/라우팅/전역 스토어 연동은 원칙적으로 오케스트레이션 훅에서만 한다**
+   - 코어 훅은 `useStepStore()`, `router.push()` 같은 “앱 플로우 결정” 의존성을 직접 가지지 않는다.
+   - 예외가 필요하면 훅 이름/파일명에 의도를 드러낸다(예: `useUploadPhotoFlow`, `useSelectModeFlow`).
+
+3. **결합이 필요하면 “콜백 주입”으로 느슨하게 연결한다**
+   - 코어 훅은 `onSuccess/onError/onSettled` 또는 도메인에 맞는 `onUploaded` 같은 옵션을 받아, 성공/실패 “사건(event)”만 외부로 방출한다.
+   - 오케스트레이션 훅이 그 이벤트를 받아 Step 전환/토스트/추적을 수행한다.
+
+4. **훅의 반환값은 최소 API로 유지한다**
+   - 반환값이 “상태 + 액션”을 넘어 커지기 시작하면(예: 액션이 6개 이상, 서로 다른 책임의 상태가 섞임) 훅 분리를 우선 검토한다.
+
+5. **파일/네이밍 규칙으로 의도를 고정한다**
+   - 코어 훅: `use-<domain>.ts` (예: `use-photo-upload.ts`)
+   - 오케스트레이션 훅: `use-<domain>-flow.ts` 또는 `use-<domain>-controller.ts` (예: `use-upload-photo-flow.ts`)
+   - “Flow/Controller” 훅은 해당 Feature/Page 범위의 정책을 포함할 수 있다.
+
+## Biome Complexity 규칙 대응
+
+`biome lint/complexity/noExcessiveCognitiveComplexity` 경고를 예방하기 위해, JSX 내부(특히 `className`)에서 **중첩 삼항 연산자** 사용을 금지합니다.
+
+- **상태 도출(Derived State):** 복잡한 boolean 조건들은 `render` 이전에 `status`(예: `idle | active | error`) 같은 **단일 문자열 상태로 먼저 도출**합니다.
+- **매핑 분리:** 스타일 로직은 `status`를 키(key)로 하는 **매핑 객체(Lookup Table)**나 `cva`의 **variants**로 위임합니다.
+- **JSX 단순화:** JSX 내부에서는 `cn(base, statusMap[status])` 형태의 **단순 병합**만 수행하여 가독성을 확보합니다.
+- **리소스 일원화:** 텍스트 라벨이나 아이콘 또한 `status` 기반 매핑으로 관리하여 렌더링 분기를 최소화합니다.
+
+## 이미지 컴포넌트 규칙
+
+- 이미지를 렌더링할 때는 기본적으로 `next/image`를 사용합니다. (`import Image from 'next/image'`)
+- 예외: `blob:`/`data:` URL 기반 프리뷰처럼 최적화 파이프라인을 적용하기 어려운 경우에는 `unoptimized` 사용 또는 `<img>` 사용을 허용합니다(사유를 명확히 남기기).
+
 ### TypeScript 타입 정의 규칙
 
 **enum 사용 지양 — as const 패턴 사용**:
