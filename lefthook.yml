@@ -9,3 +9,8 @@ pre-commit:
     typecheck:
       run: pnpm tsc --noEmit --incremental
       fail_text: "Type check failed. Fix type errors before commit."
+
+    test:
+      glob: "*.{test,spec}.{ts,tsx}"
+      run: pnpm test -- --run --reporter=dot
+      fail_text: "Tests failed. Fix tests before commit."

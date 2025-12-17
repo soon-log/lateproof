@@ -1,75 +1,110 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
-	"vcs": {
-		"enabled": true,
-		"clientKind": "git",
-		"useIgnoreFile": true
-	},
-	"files": {
-		"ignoreUnknown": true,
-		"includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
-	},
-	"formatter": {
-		"enabled": true,
-		"indentStyle": "space",
-		"indentWidth": 2,
-		"lineWidth": 100
-	},
-	"javascript": {
-		"formatter": {
-			"quoteStyle": "single",
-			"arrowParentheses": "always",
-			"trailingCommas": "none"
-		}
-	},
-	"linter": {
-		"enabled": true,
-		"rules": {
-			"recommended": true,
-			"a11y": "error",
-			"correctness": {
-				"recommended": true,
-				"useImportExtensions": "off"
-			},
-			"style": {
-				"useConsistentArrayType": {
-					"level": "error",
-					"options": {
-						"syntax": "shorthand"
-					}
-				}
-			},
-			"complexity": "warn",
-			"performance": "warn",
-			"security": "warn",
-			"nursery": {
-				"recommended": true,
-				"useSortedClasses": "warn"
-			},
-			"suspicious": {
-				"noUnknownAtRules": "off"
-			}
-		},
-		"domains": {
-			"next": "recommended",
-			"react": "recommended"
-		}
-	},
-	"assist": {
-		"actions": {
-			"source": {
-				"organizeImports": "on"
-			}
-		}
-	},
-	"overrides": [
-		{
-			"includes": ["**/__tests__/**", "**/*.{spec,test}.{js,jsx,ts,tsx}"],
-			"linter": {
-				"rules": {
-					"complexity": "off"
-				}
-			}
-		}
-	]
+  "$schema": "https://biomejs.dev/schemas/2.2.0/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!node_modules", "!.next", "!dist", "!build"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "arrowParentheses": "always",
+      "trailingCommas": "none"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "a11y": {
+        "recommended": true,
+        "noSvgWithoutTitle": "off"
+      },
+      "correctness": {
+        "recommended": true,
+        "useImportExtensions": "off"
+      },
+      "style": {
+        "useConsistentArrayType": {
+          "level": "error",
+          "options": {
+            "syntax": "shorthand"
+          }
+        }
+      },
+      "complexity": {
+        "noArguments": "error",
+        "noExcessiveCognitiveComplexity": "error",
+        "noExcessiveLinesPerFunction": {
+          "level": "warn",
+          "options": {
+            "maxLines": 100
+          }
+        },
+        "noBannedTypes": "error",
+        "noForEach": "warn",
+        "noImplicitCoercions": "off"
+      },
+      "performance": {
+        "noAccumulatingSpread": "warn",
+        "noAwaitInLoops": "warn",
+        "noDelete": "warn",
+        "noDynamicNamespaceImportAccess": "warn",
+        "noImgElement": "warn",
+        "noNamespaceImport": "warn",
+        "noReExportAll": "warn",
+        "noUnwantedPolyfillio": "warn",
+        "useGoogleFontPreconnect": "warn",
+        "useSolidForComponent": "warn",
+        "noBarrelFile": "off",
+        "useTopLevelRegex": "off"
+      },
+      "security": "warn",
+      "nursery": {
+        "recommended": true,
+        "useSortedClasses": {
+          "level": "warn",
+          "options": {
+            "attributes": ["classList"],
+            "functions": ["clsx", "cva", "tw", "tw.*"]
+          }
+        }
+      },
+      "suspicious": {
+        "noUnknownAtRules": "off",
+        "noExplicitAny": "off"
+      }
+    },
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/__tests__/**", "**/*.{spec,test}.{js,jsx,ts,tsx}"],
+      "linter": {
+        "rules": {
+          "complexity": "off"
+        }
+      }
+    }
+  ]
 }

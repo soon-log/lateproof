@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/playwright-report
+/test-results
 
 # next.js
 /.next/
@@ -49,13 +51,14 @@ next-env.d.ts
 /.codex/config.json.bak
 /.codex/config.toml
 /.codex/config.toml.bak
-/.codex/sessions
-/.codex/auth.json
-/.codex/history.jsonl
-/.codex/version.json
 /.cursor/mcp.json
 /.cursor/mcp.json.bak
 /.cursor/rules/ruler_cursor_instructions.mdc
 /.cursor/rules/ruler_cursor_instructions.mdc.bak
 /AGENTS.md
+/AGENTS.md.bak
 # END Ruler Generated Files
+
+*storybook.log
+storybook-static
+
