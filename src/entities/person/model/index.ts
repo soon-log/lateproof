@@ -11,6 +11,8 @@ export {
   selectPersons,
   usePersonStore
 } from './store';
+export type { NanobananaInputFiles } from './to-nanobanana-input';
+export { toNanobananaInput } from './to-nanobanana-input';
 export type {
   ExpressionEmoji,
   MarkerTransform,

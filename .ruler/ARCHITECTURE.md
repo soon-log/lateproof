@@ -2,9 +2,23 @@
 
 > **목적**: 프로젝트 폴더 구조와 아키텍처 패턴 정의  
 > **갱신 방식**: 기능 개발 완료 시마다 업데이트  
-> **Last Updated**: 2025-12-18 (Nanobanana 프롬프트 빌더 구현)
+> **Last Updated**: 2025-12-23 (Nanobanana 생성/다운로드 플로우 초기 구축)
 
 ---
+
+## 2025-12-23 업데이트
+- 추가: `app/api/nanobanana/_lib/adapter.ts` — Gemini 요청/응답 어댑터
+- 추가: `app/api/nanobanana/generate/route.ts` — Gemini generateContent 프록시
+- 추가: `app/api/nanobanana/download/route.ts` — base64 다운로드 응답
+- 추가: `src/entities/person/model/to-nanobanana-input.ts` — 인물/베이스 이미지 입력 변환
+- 추가: `src/entities/person/model/to-nanobanana-input.test.ts` — 입력 변환 유닛 테스트
+- 추가: `src/features/generate-image/` — 생성 폼/프리뷰/훅/테스트/스토리
+- 추가: `src/pages/generate-image/` — GENERATE Step 페이지
+- 추가: `mocks/handlers/gemini-nanobanana.ts` — Gemini generateContent MSW 핸들러
+- 변경: `src/shared/api/nanobanana` → `src/features/generate-image/api` — Nanobanana 타입 위치 이동
+- 변경: `src/app/router/step-router.tsx` — GENERATE 페이지 연결 + 결제 스텁 버튼 추가
+- 변경: `mocks/handlers/index.ts` — Gemini 핸들러 등록
+- 변경: `package.json` — `react-error-boundary` 의존성 추가
 
 ## 2025-12-18 업데이트
 - 추가: `emoji-picker-react` 패키지 — 이모티콘 선택 UI
@@ -64,9 +78,16 @@ lateproof/
 │   ├── app/                  # "/app" 메인 애플리케이션 라우트
 │   │   └── page.tsx          # StepRouter 렌더링
 │   ├── api/                  # Next.js Route Handlers (서버 전용 API)
-│   │   └── face/
-│   │       └── validate/
-│   │           └── route.ts   # Azure Face 기반 얼굴 검증 API
+│   │   ├── face/
+│   │   │   └── validate/
+│   │   │       └── route.ts   # Azure Face 기반 얼굴 검증 API
+│   │   └── nanobanana/
+│   │       ├── _lib/
+│   │       │   └── adapter.ts # Gemini 요청/응답 변환 어댑터
+│   │       ├── download/
+│   │       │   └── route.ts   # base64 다운로드 응답
+│   │       └── generate/
+│   │           └── route.ts   # Gemini generateContent 프록시
 │   ├── globals.css           # 전역 스타일 (Tailwind CSS)
 │   ├── layout.tsx            # 루트 레이아웃
 │   └── page.tsx              # "/" 루트 페이지 (랜딩페이지 예정, 현재 /app 리다이렉트)
@@ -78,6 +99,7 @@ lateproof/
 ├── mocks/                    # MSW (Mock Service Worker)
 │   ├── handlers/             # API Mock 핸들러
 │   │   ├── azure-face.ts     # Azure Face API 핸들러
+│   │   ├── gemini-nanobanana.ts # Gemini generateContent 핸들러
 │   │   └── index.ts          # 핸들러 정의
 │   ├── browser.ts            # 브라우저 환경 MSW 설정
 │   ├── node.ts               # Node 환경 MSW 설정
@@ -119,6 +141,8 @@ lateproof/
 │   │   │   │   ├── export-for-ai.test.ts
 │   │   │   │   ├── nanobanana-prompt.ts   # Nanobanana 최종 프롬프트 생성 유틸
 │   │   │   │   ├── nanobanana-prompt.test.ts
+│   │   │   │   ├── to-nanobanana-input.ts # Person → Nanobanana 입력 변환
+│   │   │   │   ├── to-nanobanana-input.test.ts
 │   │   │   │   ├── store.ts      # Person Store (Zustand) - 최대 5명, 초기화/재초기화
 │   │   │   │   ├── store.test.ts
 │   │   │   │   └── index.ts      # model Public API
@@ -168,6 +192,25 @@ lateproof/
 │   │   │   │   ├── expression-select-view.test.tsx
 │   │   │   │   └── expression-select-view.stories.tsx
 │   │   │   └── index.ts
+│   │   ├── generate-image/   # 이미지 생성 기능 (Epic 2.8)
+│   │   │   ├── api/
+│   │   │   │   ├── nanobanana-client.ts
+│   │   │   │   ├── types.ts
+│   │   │   │   └── index.ts
+│   │   │   ├── model/
+│   │   │   │   ├── use-generate-image.ts
+│   │   │   │   └── use-generate-image.test.ts
+│   │   │   ├── ui/
+│   │   │   │   ├── prompt-form.tsx
+│   │   │   │   ├── prompt-form.test.tsx
+│   │   │   │   ├── prompt-form.stories.tsx
+│   │   │   │   ├── result-preview.tsx
+│   │   │   │   ├── result-preview.test.tsx
+│   │   │   │   ├── result-preview.stories.tsx
+│   │   │   │   ├── generate-image-view.tsx
+│   │   │   │   ├── generate-image-view.test.tsx
+│   │   │   │   └── generate-image-view.stories.tsx
+│   │   │   └── index.ts
 │   │   └── README.md
 │   │
 │   ├── pages/                # Pages Layer (페이지 조합)
@@ -190,6 +233,12 @@ lateproof/
 │   │   │   │   ├── expression-select-page.tsx
 │   │   │   │   ├── expression-select-page.test.tsx
 │   │   │   │   └── expression-select-page.stories.tsx
+│   │   │   └── index.ts
+│   │   ├── generate-image/   # 이미지 생성 페이지 (Epic 2.8)
+│   │   │   ├── ui/
+│   │   │   │   ├── generate-image-page.tsx
+│   │   │   │   ├── generate-image-page.test.tsx
+│   │   │   │   └── generate-image-page.stories.tsx
 │   │   │   └── index.ts
 │   │   └── README.md
 │   │
@@ -313,6 +362,9 @@ Next.js 15 App Router의 루트 레이아웃과 페이지.
 - `page.tsx`: 루트 페이지 (`/`)
 - `app/page.tsx`: 메인 애플리케이션 페이지 (`/app`)
 - `globals.css`: Tailwind CSS 전역 스타일
+- `api/face/validate/route.ts`: Azure Face 프록시 API
+- `api/nanobanana/generate/route.ts`: Gemini generateContent 프록시
+- `api/nanobanana/download/route.ts`: base64 다운로드 응답
 
 ---
 
@@ -356,8 +408,10 @@ app/app/page.tsx (Next.js App Router)
 src/app/router/step-router.tsx (App Layer)
   ↓
 src/pages/select-mode/ (Pages Layer)
-src/pages/upload/ (예정)
-src/pages/match/ (예정)
+src/pages/upload-photo/
+src/pages/match-photo/
+src/pages/expression-select/
+src/pages/generate-image/
 ...
 ```
 
@@ -455,6 +509,10 @@ src/entities/
   - `setFacePhoto()`: 얼굴 사진 업로드
   - `updateTransform()`: 마커 위치/스케일/회전 업데이트
   - Selectors: `selectPersons`, `selectActivePersonId`, `selectCanAddPerson` 등
+- **nanobanana-prompt.ts**:
+  - `buildNanobananaPrompt()`: 인물 배치 + 표정 정보 기반 프롬프트 생성
+- **to-nanobanana-input.ts**:
+  - `toNanobananaInput()`: 베이스/참조 이미지 입력 파일로 변환
 
 ---
 
@@ -474,25 +532,31 @@ src/features/
 │   │   ├── select-mode-view.test.tsx
 │   │   └── select-mode-view.stories.tsx
 │   └── index.ts
-├── upload-photo/       # 사진 업로드 기능 (Epic 2.3 진행 중)
-│   ├── model/
-│   │   ├── file.ts                # 파일 제약(크기/타입)
-│   │   ├── use-upload-dropzone.ts # Dropzone 로직 훅(react-dropzone 래핑)
-│   │   ├── use-photo-upload.ts    # 업로드 훅(파일 선택/프리뷰/업로드)
-│   │   └── use-upload-photo-flow.ts # Step 전환 오케스트레이션(성공 콜백 주입)
+├── upload-photo/       # 사진 업로드 기능 (Epic 2.3 완료)
 │   ├── ui/
-│   │   ├── helper-text.tsx
-│   │   ├── helper-text.test.tsx
-│   │   ├── helper-text.stories.tsx
-│   │   ├── photo-preview.tsx       # 사진 미리보기(Next Image, blob 프리뷰는 unoptimized)
-│   │   ├── photo-preview.test.tsx
-│   │   ├── photo-preview.stories.tsx
-│   │   ├── upload-dropzone.tsx     # Dropzone UI (presentational)
-│   │   ├── upload-dropzone.test.tsx
-│   │   ├── upload-dropzone.stories.tsx
-│   │   ├── upload-photo-view.tsx   # 업로드 뷰 (flow 주입 가능)
-│   │   ├── upload-photo-view.test.tsx
-│   │   └── upload-photo-view.stories.tsx
+│   │   ├── upload-dropzone.tsx
+│   │   └── upload-photo-view.tsx
+│   └── index.ts
+├── match-photo/        # 인물 마커 배치 기능 (Epic 2.4 완료)
+│   ├── model/
+│   │   ├── validate-face-photo.ts
+│   │   └── validate-face-photo.test.ts
+│   ├── ui/             # person-marker/person-list-panel 등
+│   └── index.ts
+├── expression-select/  # 표정 선택 기능 (Epic 2.5 완료)
+│   ├── ui/
+│   │   ├── expression-select-view.tsx
+│   │   └── expression-select-view.stories.tsx
+│   └── index.ts
+├── generate-image/     # 이미지 생성 기능 (Epic 2.8 진행 중)
+│   ├── api/
+│   │   ├── nanobanana-client.ts
+│   │   ├── types.ts
+│   │   └── index.ts
+│   ├── model/
+│   │   ├── use-generate-image.ts
+│   │   └── use-generate-image.test.ts
+│   ├── ui/             # prompt-form/result-preview/generate-image-view
 │   └── index.ts
 └── README.md
 ```
@@ -552,19 +616,8 @@ export function Header() {
 **예정된 추가 Feature**:
 ```
 src/features/
-├── upload-image/       # 이미지 업로드 기능 (예정)
-│   ├── ui/             # Dropzone 컴포넌트
-│   └── api/            # Server Action
-├── match-faces/        # 얼굴 매칭 기능 (예정)
-│   ├── ui/             # 원 선택 UI
-│   └── lib/            # 좌표 계산 로직
-├── verify-face/        # 얼굴 검증 기능 (예정)
-│   └── api/            # Azure Face API Wrapper
-├── process-payment/    # 결제 처리 기능 (예정)
-│   └── api/            # Toss Payments 연동
-└── generate-image/     # 이미지 생성 기능 (예정)
-    ├── ui/             # 생성 결과 UI
-    └── api/            # Nanobanana API Wrapper
+└── process-payment/    # 결제 처리 기능 (예정)
+    └── api/            # Toss Payments 연동
 ```
 
 ---
@@ -582,11 +635,29 @@ src/pages/
 │   │   ├── select-mode-page.test.tsx
 │   │   └── select-mode-page.stories.tsx
 │   └── index.ts
-├── upload-photo/       # 사진 업로드 페이지 (Epic 2.3 진행 중)
+├── upload-photo/       # 사진 업로드 페이지 (Epic 2.3 완료)
 │   ├── ui/
 │   │   ├── upload-photo-page.tsx
 │   │   ├── upload-photo-page.test.tsx
 │   │   └── upload-photo-page.stories.tsx
+│   └── index.ts
+├── match-photo/        # 인물 매칭 페이지 (Epic 2.4 완료)
+│   ├── ui/
+│   │   ├── match-photo-page.tsx
+│   │   ├── match-photo-page.test.tsx
+│   │   └── match-photo-page.stories.tsx
+│   └── index.ts
+├── expression-select/  # 표정 선택 페이지 (Epic 2.5 완료)
+│   ├── ui/
+│   │   ├── expression-select-page.tsx
+│   │   ├── expression-select-page.test.tsx
+│   │   └── expression-select-page.stories.tsx
+│   └── index.ts
+├── generate-image/     # 이미지 생성 페이지 (Epic 2.8 진행 중)
+│   ├── ui/
+│   │   ├── generate-image-page.tsx
+│   │   ├── generate-image-page.test.tsx
+│   │   └── generate-image-page.stories.tsx
 │   └── index.ts
 └── README.md
 ```
@@ -600,7 +671,6 @@ src/pages/
 **예정된 추가 Page**:
 ```
 src/pages/
-├── match/              # 매칭 페이지 (예정)
 ├── payment/            # 결제 페이지 (예정)
 └── result/             # 결과 페이지 (예정)
 ```
@@ -646,7 +716,10 @@ src/shared/
 │   └── ui/             # Shadcn/UI 기반 컴포넌트
 │       ├── button.tsx
 │       ├── button.test.tsx
-│       └── button.stories.tsx
+│       ├── button.stories.tsx
+│       ├── next-step-button.tsx
+│       ├── next-step-button.test.tsx
+│       └── next-step-button.stories.tsx
 └── lib/
     ├── utils.ts        # cn() 등 유틸 함수
     ├── index.ts
@@ -688,7 +761,9 @@ API Mocking. 개발/테스트 환경에서 외부 API 대체.
 ```
 mocks/
 ├── handlers/
-│   └── index.ts        # Azure, Nanobanana, Google, Toss Mock
+│   ├── azure-face.ts   # Azure Face Mock
+│   ├── gemini-nanobanana.ts # Gemini generateContent Mock
+│   └── index.ts        # Azure/Gemini/Google/Toss Mock
 ├── browser.ts          # 브라우저 환경 MSW
 ├── node.ts             # Node 환경 MSW
 └── README.md

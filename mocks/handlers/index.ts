@@ -1,5 +1,6 @@
 import { HttpResponse, http } from 'msw';
 import { azureFaceHandlers } from './azure-face';
+import { geminiNanobananaHandlers } from './gemini-nanobanana';
 
 /**
  * MSW 요청 핸들러 배열
@@ -9,17 +10,7 @@ import { azureFaceHandlers } from './azure-face';
  */
 export const handlers = [
   ...azureFaceHandlers,
-
-  // Nanobanana API Mock
-  http.post('https://api.nanobanana.com/generate', async () => {
-    return HttpResponse.json({
-      images: [
-        { url: 'https://example.com/image1.jpg', id: 'img-1' },
-        { url: 'https://example.com/image2.jpg', id: 'img-2' },
-        { url: 'https://example.com/image3.jpg', id: 'img-3' }
-      ]
-    });
-  }),
+  ...geminiNanobananaHandlers,
 
   // Toss Payments API Mock
   http.post('https://api.tosspayments.com/v1/payments/confirm', async () => {

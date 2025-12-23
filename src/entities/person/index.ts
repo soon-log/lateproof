@@ -2,6 +2,7 @@ export type {
   ExpressionEmoji,
   MarkerTransform,
   MatchStepDataForAI,
+  NanobananaInputFiles,
   NanobananaPromptResult,
   Person,
   PersonColor as PersonColorType,
@@ -23,5 +24,6 @@ export {
   selectInitialized,
   selectPersonById,
   selectPersons,
+  toNanobananaInput,
   usePersonStore
 } from './model';

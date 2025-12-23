@@ -83,9 +83,10 @@ ID 규칙:
 - [ ] M2-E7-T03: 결제 실패 처리
 
 ## Epic 2.8 — GENERATE Step
-- [ ] M2-E8-T01: Nanobanana Payload Builder
+- [x] M2-E8-T01: Nanobanana Payload Builder
 - [ ] M2-E8-T02: 3장 생성 요청
 - [ ] M2-E8-T03: 실패 시 1장 재생성 기능
+- [x] M2-E8-T04: @google/genai SDK 리팩토링
 
 ## Epic 2.9 — RESULT Step
 - [ ] M2-E9-T01: 3장 썸네일 렌더링
